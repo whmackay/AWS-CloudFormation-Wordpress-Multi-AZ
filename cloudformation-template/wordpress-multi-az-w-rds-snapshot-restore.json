@@ -3,6 +3,45 @@
 
   "Description" : "AWS Multi-AZ Webserver with RDS backen with 2 public and 2 private subnets inside a vpc.",
 
+
+  "Metadata" : {
+    "AWS::CloudFormation::Interface" : {
+      "ParameterGroups" : [
+        {
+          "Label" : { "default" : "Application Configuration" },
+          "Parameters" : [ "ProjectName", "CodeCommitRepositoryName", "StackType" ]
+        },
+        {
+          "Label" : { "default" : "Amazon EC2 Configuration" },
+          "Parameters" : [ "WebServerInstanceType", "WebServerInstanceMonitoring", "KeyName" ]
+        },
+        {
+          "Label" : { "default" : "Auto-scaling Configuration" },
+          "Parameters" : [ "MaxWebServerCount", "MinWebServerCount", "ScalingIncrement" ]
+        },
+        {
+          "Label" : { "default" : "Load Balancer Configuration" },
+          "Parameters" : [ "CertificateID" ]
+        },
+        {
+          "Label" : { "default" : "Database Configuration" },
+          "Parameters" : [ "RDSInstanceType", "RDSMultiAZOption", "RDSServerStorage", "DatabaseBackupRetentionPeriod" ]
+        },
+        {
+          "Label" : { "default" : "Database Setup" },
+          "Parameters" : [ "DBName", "DBUserName", "DBPassword", "RDSSnapshotName" ]
+        },      
+
+      ],
+      "ParameterLabels" : {
+        "ProjectName" : { "default" : "What is the Project Name?" },
+        "CodeCommitRepositoryName" : { "default" : "What is the Code Commit Repository name?"},
+        "StackType" : { "default" : "Is this Production, Devevelopment, or Test Environment?"},
+        "RDSSnapshotName" : { "default" : "RDS Restore Snapshot Name (Optional)?"}
+      }
+    }
+  },
+
   "Parameters" : {
 
     "StackType" : {
@@ -30,7 +69,7 @@
     "CertificateID" : {
       "Type" : "String",
       "Description" : "Public Certificate ID issued by Amazon Certificate Authority. Used to derive Arn for resource in the ELB.",
-      "Default" : "e7ed81e2-1b05-4286-9fd6-9946e09c30c9"
+      "Default" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
     },
 
     "WebServerInstanceType" : {
@@ -961,6 +1000,7 @@
               "aws configure set default.region ", { "Ref" : "AWS::Region" }, " \n",
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'EC2 Configuration Started.'\n",
               "yum update -y aws-cfn-bootstrap\n",
+              "yum update -y\n",
 
               "/opt/aws/bin/cfn-init --stack ", { "Ref" : "AWS::StackName" }, " --resource WebServerAutoScalingLaunchConfiguration --region ", { "Ref" : "AWS::Region" }, "\n",
 
