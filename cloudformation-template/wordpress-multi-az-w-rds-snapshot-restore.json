@@ -9,7 +9,7 @@
       "ParameterGroups" : [
         {
           "Label" : { "default" : "Application Configuration" },
-          "Parameters" : [ "ProjectName", "CodeCommitRepositoryName", "StackType" ]
+          "Parameters" : [ "ProjectName", "CodeCommitRepositoryName", "StackType", "CodeDeploymentEnabled" ]
         },
         {
           "Label" : { "default" : "Amazon EC2 Configuration" },
@@ -37,7 +37,8 @@
         "ProjectName" : { "default" : "What is the Project Name?" },
         "CodeCommitRepositoryName" : { "default" : "What is the Code Commit Repository name?"},
         "StackType" : { "default" : "Is this Production, Devevelopment, or Test Environment?"},
-        "RDSSnapshotName" : { "default" : "RDS Restore Snapshot Name (Optional)?"}
+        "RDSSnapshotName" : { "default" : "RDS Restore Snapshot Name (Optional)?"},
+        "CodeDeploymentEnabled" : { "default" : "Automatically deploy code from CodeCommit? If false Code Pipeline will have to be created manually."}
       }
     }
   },
@@ -167,6 +168,12 @@
       "Type" : "String",
       "Description" : "S3 bucket name for configuration, backup, etc. files.",
       "Default" : "nonexistantbucket"
+    },
+
+    "CodeDeploymentEnabled" : {
+      "Type" : "String",
+      "Description" : "Create Code Pipeline to enable automatic deployment.",
+      "Default" : "True"
     }
   },
 
@@ -322,7 +329,8 @@
 
   "Conditions" : {
 
-    "UseRDSSnapshot" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "RDSSnapshotName" }, "" ] } ] } 
+    "UseRDSSnapshot" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "RDSSnapshotName" }, "" ] } ] }, 
+    "CreateCodePipeline" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "CodeDeploymentEnabled" }, "False" ] } ] } 
 
   },
 
@@ -981,7 +989,7 @@
                 "owner" : "root",
                 "group" : "root"
               }
-              
+
             },
 
             "commands" : {
@@ -1197,6 +1205,7 @@
 
       "WebServerCodePipeline" : {
         "Type" : "AWS::CodePipeline::Pipeline",
+        "Condition" : "CreateCodePipeline",
         "DependsOn" : ["WebServerAutoScalingLaunchConfiguration", "WebServerCodePipelineRole", "S3Bucket"],
         "Properties" : {
           "ArtifactStore" : {
