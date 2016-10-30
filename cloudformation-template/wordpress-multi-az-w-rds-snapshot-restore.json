@@ -879,7 +879,11 @@
       "DependsOn" : [ "GatewayToInternet", "WebServerSecurityGroup", "RDSInstance", "EC2InstanceProfile", "SQS" ],
       "Metadata" : {
         "AWS::CloudFormation::Init" : {
-          "config" : {
+          "configSets" : {
+            "WebServer" : [ "config1" ]
+          },
+
+          "config1" : {
             "packages" : {
               "yum" : {
                 "httpd" : [],
@@ -892,7 +896,9 @@
                 "wget" : []
               }
             },
+
             "files" : {
+
               "/tmp/health-check.html" : {
                   "content" : { "Fn::Join" : ["", [
                   "<html>\n",
@@ -904,6 +910,7 @@
                 "owner" : "root",
                 "group" : "root"
               },
+
               "/home/ec2-user/database-credentials.txt" : {
                   "content" : { "Fn::Join" : ["", [
                   { "Fn::GetAtt" : [ "RDSInstance", "Endpoint.Address" ] }, "\n",
@@ -915,6 +922,7 @@
                 "owner" : "root",
                 "group" : "root"
               },
+
               "/home/ec2-user/CloudWatch-Logs-Config.cfg" : {
                   "content" : { "Fn::Join" : ["", [
                   "[general]\n",
@@ -973,12 +981,44 @@
                 "owner" : "root",
                 "group" : "root"
               }
+
             },
+
+            "commands" : {
+
+              "download_awslogs_agent" : {
+                "command" : "curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O",
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "download_codedeploy_agent" : {
+                "command" : { "Fn::Join" : [ "", [ "wget https://aws-codedeploy-", { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/latest/install" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              }          
+
+            },
+
             "services" : {
+
               "httpd" : {
+                "enabled" : "true",
+                "ensureRunning" : "true",
+                "sources" : [ "/var/www/html" ]
+              },
+
+              "awslogs" : {
+                "enabled" : "true",
+                "ensureRunning" : "true",
+                "files" : [ "/var/awslogs/etc/awslogs.conf"]
+              },
+
+              "codedeploy-agent" : {
                 "enabled" : "true",
                 "ensureRunning" : "true"
               }
+
             }
           }
         }
@@ -999,27 +1039,28 @@
               "#!/bin/bash -v\n",
               "aws configure set default.region ", { "Ref" : "AWS::Region" }, " \n",
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'EC2 Configuration Started.'\n",
+              
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Updating all packages using Yum.'\n",
+              "yum update -y\n",
+
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Updating cfn-init using Yum.'\n",
               "yum update -y aws-cfn-bootstrap\n",
               "yum update -y\n",
 
-              "/opt/aws/bin/cfn-init --stack ", { "Ref" : "AWS::StackName" }, " --resource WebServerAutoScalingLaunchConfiguration --region ", { "Ref" : "AWS::Region" }, "\n",
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Executing cfn-init.'\n",
+              "/opt/aws/bin/cfn-init --stack ", { "Ref" : "AWS::StackName" }, " --configsets WebServer --resource WebServerAutoScalingLaunchConfiguration --region ", { "Ref" : "AWS::Region" }, "\n",
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Completed cfn-init'\n",
 
-              "cd /home/ec2-user\n",
-              "curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O\n",
-              "chmod +x /home/ec2-user/awslogs-agent-setup.py\n",
-              { "Fn::Join" : [ "", [ "/home/ec2-user/awslogs-agent-setup.py -n -r ", { "Ref" : "AWS::Region" }, " -c /home/ec2-user/CloudWatch-Logs-Config.cfg\n" ] ] },
-              "chkconfig awslogs on\n",
-              "service awslogs restart\n",
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing AWSLogs Agent.'\n",
+              "chmod +x /tmp/awslogs-agent-setup.py\n",
+              { "Fn::Join" : [ "", [ "/tmp/awslogs-agent-setup.py -n -r ", { "Ref" : "AWS::Region" }, " -c /home/ec2-user/CloudWatch-Logs-Config.cfg\n" ] ] },
 
-              { "Fn::Join" : [ "", [ "wget https://aws-codedeploy-", { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/latest/install\n" ] ] },
-              "chmod +x /home/ec2-user/install\n",
-              "/home/ec2-user/install auto\n",
-              "chkconfig codedeploy-agent on\n",
-              "service codedeploy-agent start\n",
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing CodeDeploy Agent.'\n",
+              "chmod +x /tmp/install\n",
+              "/tmp/install auto\n",
 
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Moving ELB health-check.html to /var/www/html.'\n",
               "mv /tmp/health-check.html /var/www/html/\n",
-              "chkconfig httpd on\n",
-              "service httpd restart\n",
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'EC2 Configuration Completed.'\n"
             ] ]
           }
