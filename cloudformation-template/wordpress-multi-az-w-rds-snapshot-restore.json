@@ -25,7 +25,7 @@
         },
         {
           "Label" : { "default" : "Database Configuration" },
-          "Parameters" : [ "RDSInstanceType", "RDSMultiAZOption", "RDSServerStorage", "DatabaseBackupRetentionPeriod" ]
+          "Parameters" : [ "RDSInstanceType", "RDSMultiAZOption", "RDSServerStorage", "RDSEncryption", "DatabaseBackupRetentionPeriod" ]
         },
         {
           "Label" : { "default" : "Database Setup" },
@@ -139,6 +139,13 @@
       "Default" : "5"
     },
 
+    "RDSEncryption" : {
+      "Type" : "String",
+      "Description" : "Encrypt database volume.",
+      "Default" : "False",
+      "AllowedValues" : [ "True", "False" ]
+    },
+
     "DatabaseBackupRetentionPeriod" : {
       "Type" : "String",
       "Description" : "Number of days to keep a backup of the database.",
@@ -173,7 +180,8 @@
     "CodeDeploymentEnabled" : {
       "Type" : "String",
       "Description" : "Create Code Pipeline to enable automatic deployment.",
-      "Default" : "True"
+      "Default" : "True",
+      "AllowedValues" : [ "True", "False" ]
     }
   },
 
@@ -795,7 +803,7 @@
         },
         "MultiAZ" : { "Ref" : "RDSMultiAZOption" },
         "PubliclyAccessible" : "False",
-        "StorageEncrypted" : "True",
+        "StorageEncrypted" : { "Ref" : "RDSEncryption" },
         "StorageType" : "gp2",
         "VPCSecurityGroups" : [ { "Ref" : "RDSWebServerSecurityGroup" }],
         "Tags" : [
@@ -1010,23 +1018,25 @@
 
             "services" : {
 
-              "httpd" : {
-                "enabled" : "true",
-                "ensureRunning" : "true",
-                "sources" : [ "/var/www/html" ]
-              },
+              "sysvinit" : {
 
-              "awslogs" : {
-                "enabled" : "true",
-                "ensureRunning" : "true",
-                "files" : [ "/var/awslogs/etc/awslogs.conf"]
-              },
+                "httpd" : {
+                  "enabled" : "true",
+                  "ensureRunning" : "true",
+                  "sources" : [ "/var/www/html" ]
+                },
 
-              "codedeploy-agent" : {
-                "enabled" : "true",
-                "ensureRunning" : "true"
+                "awslogs" : {
+                  "enabled" : "true",
+                  "ensureRunning" : "true",
+                  "files" : [ "/var/awslogs/etc/awslogs.conf"]
+                },
+
+                "codedeploy-agent" : {
+                  "enabled" : "true",
+                  "ensureRunning" : "true"
+                }
               }
-
             }
           }
         }
