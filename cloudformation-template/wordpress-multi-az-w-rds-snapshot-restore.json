@@ -68,7 +68,7 @@
     },
 
     "CertificateID" : {
-      "Type" : "String",
+      "Type" : "AWS::ACM::Certificate",
       "Description" : "Public Certificate ID issued by Amazon Certificate Authority. Used to derive Arn for resource in the ELB.",
       "Default" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
     },
