@@ -1012,7 +1012,13 @@
                 "command" : { "Fn::Join" : [ "", [ "wget https://aws-codedeploy-", { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/latest/install" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
-              }          
+              },
+
+              "download_ssm_agent" : {
+                "command" : { "Fn::Join" : [ "", [ "wget https://amazon-ssm-", { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/latest/linux_amd64/amazon-ssm-agent.rpm -o amazon-ssm-agent.rpm" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              }
 
             },
 
@@ -1035,7 +1041,13 @@
                 "codedeploy-agent" : {
                   "enabled" : "true",
                   "ensureRunning" : "true"
+                },
+
+                "amazon-ssm-agent" : {
+                  "enabled" : "true",
+                  "ensureRunning" : "true"
                 }
+
               }
             }
           }
@@ -1076,6 +1088,9 @@
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing CodeDeploy Agent.'\n",
               "chmod +x /tmp/install\n",
               "/tmp/install auto\n",
+
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing SSM Agent.'\n",
+              "yum install -y amazon-ssm-agent.rpm",
 
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Moving ELB health-check.html to /var/www/html.'\n",
               "mv /tmp/health-check.html /var/www/html/\n",
@@ -1526,6 +1541,62 @@
                 "Resource": [
                     "arn:aws:logs:*:*:*"
                 ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "ssm:DescribeAssociation",
+                  "ssm:GetDocument",
+                  "ssm:ListAssociations",
+                  "ssm:UpdateAssociationStatus",
+                  "ssm:UpdateInstanceInformation"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "ec2messages:AcknowledgeMessage",
+                  "ec2messages:DeleteMessage",
+                  "ec2messages:FailMessage",
+                  "ec2messages:GetEndpoint",
+                  "ec2messages:GetMessages",
+                  "ec2messages:SendReply"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "cloudwatch:PutMetricData"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "ec2:DescribeInstanceStatus"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "ds:CreateComputer",
+                  "ds:DescribeDirectories"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:DescribeLogGroups",
+                  "logs:DescribeLogStreams",
+                  "logs:PutLogEvents"
+                ],
+                "Resource": "*"
               }
             ]
           },
