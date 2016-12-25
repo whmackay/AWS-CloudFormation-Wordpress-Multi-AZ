@@ -68,7 +68,7 @@
     },
 
     "CertificateID" : {
-      "Type" : "AWS::ACM::Certificate",
+      "Type" : "String",
       "Description" : "Public Certificate ID issued by Amazon Certificate Authority. Used to derive Arn for resource in the ELB.",
       "Default" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
     },
@@ -385,17 +385,8 @@
                 "arn:aws:s3:::repo.*.amazonaws.com/*" ,
                 "arn:aws:s3:::codedeploydemobucket/*",
                 "arn:aws:s3:::aws-cloudwatch/*",
-                "arn:aws:s3:::aws-codedeploy-us-east-1/*",
-                "arn:aws:s3:::aws-codedeploy-us-west-1/*",
-                "arn:aws:s3:::aws-codedeploy-us-west-2/*",
-                "arn:aws:s3:::aws-codedeploy-ap-northeast-1/*",
-                "arn:aws:s3:::aws-codedeploy-ap-northeast-2/*",
-                "arn:aws:s3:::aws-codedeploy-ap-south-1/*",
-                "arn:aws:s3:::aws-codedeploy-ap-southeast-1/*",        
-                "arn:aws:s3:::aws-codedeploy-ap-southeast-2/*",
-                "arn:aws:s3:::aws-codedeploy-eu-central-1/*",
-                "arn:aws:s3:::aws-codedeploy-eu-west-1/*",
-                "arn:aws:s3:::aws-codedeploy-sa-east-1/*"
+                { "Fn::Join" : ["", [ "arn:aws:s3:::amazon-ssm-", { "Ref" : "AWS::Region" }, "/*" ]]},
+                { "Fn::Join" : ["", [ "arn:aws:s3:::aws-codedeploy-", { "Ref" : "AWS::Region" }, "/*" ]]}
               ]
             }
           ]
@@ -1015,7 +1006,7 @@
               },
 
               "download_ssm_agent" : {
-                "command" : { "Fn::Join" : [ "", [ "wget https://amazon-ssm-", { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/latest/linux_amd64/amazon-ssm-agent.rpm -o amazon-ssm-agent.rpm" ] ] },
+                "command" : { "Fn::Join" : [ "", [ "wget https://amazon-ssm-", { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/latest/linux_amd64/amazon-ssm-agent.rpm" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               }
@@ -1090,11 +1081,12 @@
               "/tmp/install auto\n",
 
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing SSM Agent.'\n",
-              "yum install -y amazon-ssm-agent.rpm",
+              "yum install -y /tmp/amazon-ssm-agent.rpm\n",
 
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Moving ELB health-check.html to /var/www/html.'\n",
               "mv /tmp/health-check.html /var/www/html/\n",
-              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'EC2 Configuration Completed.'\n"
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'EC2 Configuration Completed.'\n",
+              "service httpd start\n"
             ] ]
           }
         }
@@ -1521,6 +1513,15 @@
                     "s3:GetObjectVersion"
                 ],
                 "Resource": { "Fn::Join" : [ "", [ "arn:aws:s3:::", { "Ref" : "S3Repository" }, "/*" ]]}
+              },
+              {
+                "Action": [
+                  "s3:GetObject",
+                  "s3:GetObjectAcl",
+                  "s3:GetObjectVersion"
+                ],
+                "Resource": "arn:aws:s3:::amazon-ssm-us-east-1/*",
+                "Effect": "Allow"
               },
               {
                 "Effect": "Allow",
