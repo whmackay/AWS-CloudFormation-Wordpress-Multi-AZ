@@ -1,5 +1,5 @@
 #!/bin/bash
-PATH=./cloudformation-template/wordpress-multi-az-w-rds-snapshot-restore.json
+PATH=/Users/whmackay/Programming/AWS-Projects/Cloudformation/AWS-CloudFormation-Wordpress-Multi-AZ/cloudformation-template/wordpress-multi-az-w-rds-snapshot-restore.json
 TEMPLATENAME=wordpress-multi-az-w-rds-snapshot-restore.json
 
 /usr/local/bin/aws s3 cp $PATH s3://mycustomcftemplates/
