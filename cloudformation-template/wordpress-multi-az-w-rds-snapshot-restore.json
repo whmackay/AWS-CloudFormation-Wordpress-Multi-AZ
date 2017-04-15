@@ -8,8 +8,8 @@
     "AWS::CloudFormation::Interface" : {
       "ParameterGroups" : [
         {
-          "Label" : { "default" : "Application Configuration" },
-          "Parameters" : [ "ProjectName", "CodeCommitRepositoryName", "StackType", "CodeDeploymentEnabled" ]
+          "Label": { "default": "Application Configuration" },
+          "Parameters": [ "ProjectName", "CodeCommitRepositoryName", "CodeCommitBranch", "StackType", "CodeDeploymentEnabled" ]
         },
         {
           "Label" : { "default" : "Amazon EC2 Configuration" },
@@ -30,8 +30,7 @@
         {
           "Label" : { "default" : "Database Setup" },
           "Parameters" : [ "DBName", "DBUserName", "DBPassword", "RDSSnapshotName" ]
-        },      
-
+        }   
       ],
       "ParameterLabels" : {
         "ProjectName" : { "default" : "What is the Project Name?" },
@@ -62,9 +61,15 @@
       "Description" : "To what project does this stack belong."
     },
 
-    "CodeCommitRepositoryName" : {
-      "Type" : "String",
-      "Description" : "CodeCommit Repository name for CodeDeploy and CodePipeline"
+    "CodeCommitRepositoryName": {
+      "Type": "String",
+      "Description": "CodeCommit Repository name for CodeDeploy and CodePipeline"
+    },
+
+    "CodeCommitBranch": {
+      "Type": "String",
+      "Description": "CodeCommit Repository name for CodeDeploy and CodePipeline",
+      "Default" :  "master"
     },
 
     "CertificateID" : {
@@ -1244,7 +1249,7 @@
                       "Version" : "1"
                   },
                   "Configuration" : {
-                    "BranchName" : "master",
+                    "BranchName": { "Ref": "CodeCommitBranch" },
                     "RepositoryName" : { "Ref" : "CodeCommitRepositoryName" }
                   },
                   "Name" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "Source-Stage-Action" ] ] },
