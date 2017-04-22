@@ -7,6 +7,7 @@ Resources
 	S3
 	ELB
 	VPC
+	IGW
 
 
 Permissions
