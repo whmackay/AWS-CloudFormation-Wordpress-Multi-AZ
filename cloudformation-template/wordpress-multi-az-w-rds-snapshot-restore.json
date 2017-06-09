@@ -1171,6 +1171,31 @@
             "Unit" : "Percent"
          }
       },
+    
+      "WebServerHealthyMinServerCountAlarm" : {
+        "Type" : "AWS::CloudWatch::Alarm",
+        "DependsOn" : "WebServerAutoScalingLaunchConfiguration",
+        "Properties" : {
+          "ActionsEnabled" : "True",
+          "AlarmActions" : "arn:aws:sns:us-east-1:797414542766:WilliamMackay_Website_SNS",
+          "AlarmDescription" : "Alert SNS Topic when healthy server count falls below minimum",
+          "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "WebServerAutoScalingGroup" }, "HealthyServerCount-Alarm"] ] },
+          "ComparisonOperator" : "LessThanThreshold",
+          "Dimensions" : [
+            {
+              "Name" : "AutoScalingGroupName",
+              "Value" : { "Ref" : "WebServerAutoScalingGroup" }
+            }
+          ],
+          "EvaluationPeriods" : "1",
+          "MetricName" : "HealthyHostCount",
+          "Namespace" : "AWS/ApplicationELB",
+          "Period" : "900",
+          "Statistic" : "Minimum",
+          "Threshold" : "1.00",
+          "Unit" : "Count"
+        }
+      },
 
       "WebServerCodeDeployApplication":{
         "Type" : "AWS::CodeDeploy::Application",
