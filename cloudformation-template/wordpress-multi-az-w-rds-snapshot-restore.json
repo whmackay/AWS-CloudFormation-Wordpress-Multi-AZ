@@ -30,7 +30,11 @@
         {
           "Label" : { "default" : "Database Setup" },
           "Parameters" : [ "DBName", "DBUserName", "DBPassword", "RDSSnapshotName" ]
-        }   
+        },
+        {
+          "Label" : { "default" : "Monitoring" },
+          "Parameters" : [ "SNSTopic" ]
+        }
       ],
       "ParameterLabels" : {
         "ProjectName" : { "default" : "What is the Project Name?" },
@@ -64,6 +68,11 @@
     "CodeCommitRepositoryName": {
       "Type": "String",
       "Description": "CodeCommit Repository name for CodeDeploy and CodePipeline"
+    },
+
+    "SNSTopic": {
+      "Type": "String",
+      "Description": "ARN for the SNS topic to send alert to when triggered."
     },
 
     "CodeCommitBranch": {
@@ -1177,7 +1186,7 @@
         "DependsOn" : "WebServerAutoScalingLaunchConfiguration",
         "Properties" : {
           "ActionsEnabled" : "True",
-          "AlarmActions" : "arn:aws:sns:us-east-1:797414542766:WilliamMackay_Website_SNS",
+          "AlarmActions" : { "Ref" : "SNSTopic" },
           "AlarmDescription" : "Alert SNS Topic when healthy server count falls below minimum",
           "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "WebServerAutoScalingGroup" }, "HealthyServerCount-Alarm"] ] },
           "ComparisonOperator" : "LessThanThreshold",
