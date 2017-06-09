@@ -1171,7 +1171,7 @@
             "Unit" : "Percent"
          }
       },
-    
+
       "WebServerHealthyMinServerCountAlarm" : {
         "Type" : "AWS::CloudWatch::Alarm",
         "DependsOn" : "WebServerAutoScalingLaunchConfiguration",
