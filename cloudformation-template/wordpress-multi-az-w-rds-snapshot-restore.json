@@ -697,7 +697,7 @@
           "SourceSecurityGroupId" : { "Fn::GetAtt" : [ "WebServerELBSecurityGroup", "GroupId" ] }        
         } ],
         "Tags" : [
-          { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "SecurityGroup-HTTP-HTTPS-SSH" ] ] } },
+          { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "EC2-SecurityGroup" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
           { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
         ]
@@ -722,7 +722,7 @@
           "CidrIp" : "0.0.0.0/0"        
         } ],
         "Tags" : [
-          { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "SecurityGroup-HTTP-HTTPS" ] ] } },
+          { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "ELB-SecurityGroup" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
           { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
         ]
