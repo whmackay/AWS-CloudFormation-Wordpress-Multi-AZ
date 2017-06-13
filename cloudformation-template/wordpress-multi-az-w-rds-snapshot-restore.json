@@ -1188,11 +1188,11 @@
           "ActionsEnabled" : "True",
           "AlarmActions" : { "Ref" : "SNSTopic" },
           "AlarmDescription" : "Alert SNS Topic when healthy server count falls below minimum",
-          "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "WebServerAutoScalingGroup" }, "HealthyServerCount-Alarm"] ] },
+          "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "WebServerELB" }, "HealthyServerCount-Alarm"] ] },
           "ComparisonOperator" : "LessThanThreshold",
           "Dimensions" : [
             {
-              "Name" : "ELB",
+              "Name" : "LoadBalancerName",
               "Value" : { "Ref" : "WebServerELB" }
             }
           ],
@@ -1213,20 +1213,20 @@
           "ActionsEnabled" : "True",
           "AlarmActions" : { "Ref" : "SNSTopic" },
           "AlarmDescription" : "Alert SNS Topic when healthy server count falls below minimum",
-          "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "WebServerAutoScalingGroup" }, "HealthyServerCount-Alarm"] ] },
+          "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "WebServerELB" }, "HealthyServerCount-Alarm"] ] },
           "ComparisonOperator" : "LessThanThreshold",
           "Dimensions" : [
             {
-              "Name" : "ELB",
+              "Name" : "LoadBalancerName",
               "Value" : { "Ref" : "WebServerELB" }
             }
           ],
           "EvaluationPeriods" : "1",
           "MetricName" : "RequestCount",
           "Namespace" : "AWS/ApplicationELB",
-          "Period" : "60",
+          "Period" : "3600",
           "Statistic" : "Sum",
-          "Threshold" : "1.00",
+          "Threshold" : "200",
           "Unit" : "Count"
         }
       },
