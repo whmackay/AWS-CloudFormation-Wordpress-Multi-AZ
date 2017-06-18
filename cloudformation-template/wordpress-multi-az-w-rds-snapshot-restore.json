@@ -33,7 +33,7 @@
         },
         {
           "Label" : { "default" : "Monitoring" },
-          "Parameters" : [ "SNSTopic" ]
+          "Parameters" : [ "SNSTopic", "ELBRequestAlarmThreshold" ]
         }
       ],
       "ParameterLabels" : {
@@ -118,6 +118,12 @@
       "Type" : "Number",
       "Description" : "The number of servers you want added or removed based on demand.",
       "Default" : "1"
+    },
+
+    "ELBRequestAlarmThreshold" : {
+      "Type" : "Number",
+      "Description" : "The number of transaction requests per hour that will trigger an alert.",
+      "Default" : "2500"
     },
 
     "KeyName" : {
@@ -1133,7 +1139,7 @@
             "ActionsEnabled" : "True",
             "AlarmActions" : [ { "Ref" : "WebServerAutoScalingScaleUpPolicy" } ],
             "AlarmDescription" : "Alarm to trigger a scale up event on the scaling group when CPU gets to high.",
-            "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "WebServerAutoScalingScaleUpPolicy" }, "Alarm"] ] },
+            "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "AWS::StackName" }, "AutoScaling-ScaleUp-Alarm" ] ] },
             "ComparisonOperator" : "GreaterThanOrEqualToThreshold",
             "Dimensions" : [ 
               { 
@@ -1158,7 +1164,7 @@
             "ActionsEnabled" : "True",
             "AlarmActions" : [ { "Ref" : "WebServerAutoScalingScaleDownPolicy" } ],
             "AlarmDescription" : "Alarm to trigger a scale up event on the scaling group when CPU gets to high.",
-            "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "WebServerAutoScalingScaleDownPolicy"}, "Alarm"] ] },
+            "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "AWS::StackName" }, "AutoScaling-ScaleDown-Alarm" ] ] },
             "ComparisonOperator" : "LessThanOrEqualToThreshold",
             "Dimensions" : [ 
               { 
@@ -1181,10 +1187,10 @@
         "DependsOn" : [ "WebServerAutoScalingLaunchConfiguration", "WebServerELB" ],
         "Properties" : {
           "ActionsEnabled" : "True",
-          "AlarmActions" : { "Ref" : "SNSTopic" },
+          "AlarmActions" : [ { "Ref" : "SNSTopic" } ],
           "AlarmDescription" : "Alert SNS Topic when healthy server count falls below minimum",
-          "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "WebServerELB" }, "HealthyServerCount-Alarm"] ] },
-          "ComparisonOperator" : "LessThanThreshold",
+          "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "AWS::StackName" }, "ELB-HealthyServerCount-Alarm"] ] },
+          "ComparisonOperator" : "LessThanOrEqualToThreshold",
           "Dimensions" : [
             {
               "Name" : "LoadBalancerName",
@@ -1196,7 +1202,7 @@
           "Namespace" : "AWS/ApplicationELB",
           "Period" : "900",
           "Statistic" : "Minimum",
-          "Threshold" : "1.00",
+          "Threshold" : "1",
           "Unit" : "Count"
         }
       },
@@ -1206,10 +1212,10 @@
         "DependsOn" : [ "WebServerAutoScalingLaunchConfiguration", "WebServerELB" ],
         "Properties" : {
           "ActionsEnabled" : "True",
-          "AlarmActions" : { "Ref" : "SNSTopic" },
-          "AlarmDescription" : "Alert SNS Topic when healthy server count falls below minimum",
-          "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "WebServerELB" }, "HealthyServerCount-Alarm"] ] },
-          "ComparisonOperator" : "LessThanThreshold",
+          "AlarmActions" : [ { "Ref" : "SNSTopic" } ],
+          "AlarmDescription" : "Alert SNS that requests to ELB has exceeded threshold.",
+          "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "AWS::StackName" }, "ELB-Requests-Alarm"] ] },
+          "ComparisonOperator" : "GreaterThanOrEqualToThreshold",
           "Dimensions" : [
             {
               "Name" : "LoadBalancerName",
@@ -1221,7 +1227,7 @@
           "Namespace" : "AWS/ApplicationELB",
           "Period" : "3600",
           "Statistic" : "Sum",
-          "Threshold" : "200",
+          "Threshold" : { "Ref" : "ELBRequestAlarmThreshold" },
           "Unit" : "Count"
         }
       },
