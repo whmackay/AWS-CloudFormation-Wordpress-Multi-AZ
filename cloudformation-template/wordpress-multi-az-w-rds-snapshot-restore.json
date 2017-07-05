@@ -499,7 +499,7 @@
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
         "Tags" : [
-          { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "RouteTable" ] ] } },
+          { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "Public-RouteTable" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
           { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
         ]
@@ -513,6 +513,18 @@
         "RouteTableId" : { "Ref" : "PublicRouteTable" },
         "DestinationCidrBlock" : "0.0.0.0/0",
         "GatewayId" : { "Ref" : "InternetGateway" }
+      }
+    },
+
+    "PrivateRouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "Tags" : [
+          { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "Private-RouteTable" ] ] } },
+          { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
+        ]
       }
     },
 
@@ -622,6 +634,22 @@
       "Properties" : {
         "SubnetId" : { "Ref" : "WebServerSubnet2" },
         "NetworkAclId" : { "Ref" : "WebServerNetworkAcl" }
+      }
+    },
+
+    "RDSSubnet1RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "RDSSubnet1" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable" }
+      }
+    },
+
+    "RDSSubnet2RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "RDSSubnet2" },
+        "RouteTableId" : { "Ref" : "PrivateRouteTable" }
       }
     },
 
