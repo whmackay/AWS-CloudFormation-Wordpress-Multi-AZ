@@ -1222,7 +1222,7 @@
           "MetricName" : "HealthyHostCount",
           "Namespace" : "AWS/ELB",
           "Period" : "300",
-          "Statistic" : "Minimum",
+          "Statistic" : "Average",
           "Threshold" : "1",
           "Unit" : "Count"
         }
