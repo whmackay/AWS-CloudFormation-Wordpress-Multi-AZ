@@ -1218,10 +1218,10 @@
               "Value" : { "Ref" : "WebServerELB" }
             }
           ],
-          "EvaluationPeriods" : "1",
+          "EvaluationPeriods" : "2",
           "MetricName" : "HealthyHostCount",
           "Namespace" : "AWS/ELB",
-          "Period" : "900",
+          "Period" : "300",
           "Statistic" : "Minimum",
           "Threshold" : "1",
           "Unit" : "Count"
