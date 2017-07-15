@@ -1218,7 +1218,7 @@
               "Value" : { "Ref" : "WebServerELB" }
             }
           ],
-          "EvaluationPeriods" : "2",
+          "EvaluationPeriods" : "1",
           "MetricName" : "HealthyHostCount",
           "Namespace" : "AWS/ELB",
           "Period" : "300",
