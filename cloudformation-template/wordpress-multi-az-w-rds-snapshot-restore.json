@@ -1203,7 +1203,7 @@
          }
       },
 
-      "WebServerHealthyMinServerCountAlarm" : {
+      "WebServerHealthyServerCountAlarm" : {
         "Type" : "AWS::CloudWatch::Alarm",
         "DependsOn" : [ "WebServerAutoScalingLaunchConfiguration", "WebServerELB" ],
         "Properties" : {
@@ -1222,7 +1222,7 @@
           "MetricName" : "HealthyHostCount",
           "Namespace" : "AWS/ELB",
           "Period" : "300",
-          "Statistic" : "Average",
+          "Statistic" : "Sum",
           "Threshold" : "1",
           "Unit" : "Count"
         }
