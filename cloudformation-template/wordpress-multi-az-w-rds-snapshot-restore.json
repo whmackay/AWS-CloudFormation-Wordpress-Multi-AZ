@@ -581,7 +581,7 @@
         "NetworkAclId" : { "Ref" : "WebServerNetworkAcl" },
         "RuleNumber" : "102",
         "Protocol" : "6",
-        "RuleAction" : "allow",
+        "RuleAction" : "deny",
         "Egress" : "false",
         "CidrBlock" : "0.0.0.0/0",
         "PortRange" : { "From" : "22", "To" : "22" }
@@ -936,7 +936,11 @@
                 "php-mysql" : [],
                 "php-mbstring" : [],
                 "ruby" : [],
-                "wget" : []
+                "wget" : [],
+                "perl-Switch" : [],
+                "perl-DateTime" : [],
+                "perl-Sys-Syslog" : [],
+                "perl-LWP-Protocol-https" : []
               }
             },
 
@@ -1035,6 +1039,12 @@
                 "ignoreErrors" : "true"
               },
 
+              "download_Cloudwatch_monitoring_scripts" : {
+                "command" : "curl http://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.1.zip -O",
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
               "download_codedeploy_agent" : {
                 "command" : { "Fn::Join" : [ "", [ "wget https://aws-codedeploy-", { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/latest/install" ] ] },
                 "cwd" : "/tmp",
@@ -1118,6 +1128,12 @@
 
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing SSM Agent.'\n",
               "yum install -y /tmp/amazon-ssm-agent.rpm\n",
+
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing CloudWatch Monitoring.'\n",
+              "unzip /tmp/CloudWatchMonitoringScripts-1.2.1.zip -d /tmp\n",
+              "mkdir /root/scripts\n",
+              "mv /tmp/aws-scripts-mon /root/scripts/\n",
+              "(crontab -l; echo '*/5 * * * * /root/scripts/aws-scripts-mon/mon-put-instance-data.pl --mem-used-incl-cache-buff --mem-util --disk-space-util --disk-path=/ --from-cron') | crontab -\n",
 
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Moving ELB health-check.html to /var/www/html.'\n",
               "mv /tmp/health-check.html /var/www/html/\n",
