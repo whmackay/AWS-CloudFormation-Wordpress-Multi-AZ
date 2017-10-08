@@ -150,7 +150,7 @@
     "RDSSnapshotName" : {
       "Description" : "RDS Snapshot to restore from for new stack (Optional). Provide RDS Snapshot Name or ARN.",
       "Type" : "String",
-      "Default" : "",
+      "Default" : ""
     },
 
     "RDSServerStorage" : {
@@ -380,6 +380,59 @@
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
           { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }      
         ]
+      }
+    },
+
+    "VPCFlowLog" : {
+      "Type" : "AWS::EC2::FlowLog",
+      "DependsOn" : [ "VPC", "VPCFlowLogIAMRole" ],
+      "Properties" : {
+        "DeliverLogsPermissionArn" : { "Fn::GetAtt" : [ "VPCFlowLogIAMRole" , "Arn" ] },
+        "LogGroupName" : { "Fn::Join" : [ "", [ { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/VPC" ] ] },
+        "ResourceId" : { "Ref" : "VPC" },
+        "ResourceType" : "VPC",
+        "TrafficType" : "ALL"
+      }
+    },
+
+    "VPCFlowLogIAMRole" : {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [ {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [ "vpc-flow-logs.amazonaws.com" ]
+            },
+            "Action": [ "sts:AssumeRole" ]
+          } ]
+        },
+        "Path": "/"
+      }
+    },
+
+    "VPCFlowLogIAMPolicy" : {
+      "Type" : "AWS::IAM::Policy",
+      "Properties" : {
+        "PolicyDocument" : {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "PolicyName" : "VPCFlowLog",
+        "Roles" : [ { "Ref" : "VPCFlowLogIAMRole" } ]
       }
     },
 
@@ -825,7 +878,7 @@
           "Fn::If" : [
             "UseRDSSnapshot",
             { "Ref" : "AWS::NoValue" },
-            { "Ref" : "DBPassword" },
+            { "Ref" : "DBPassword" }
           ]
         },
         "MultiAZ" : { "Ref" : "RDSMultiAZOption" },
@@ -841,71 +894,150 @@
       }
     },
 
-    "WebServerELB" : {
-      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
-      "DependsOn" : "RDSInstance",
-        "Properties": {
-          "CrossZone" : "True",
-          "AccessLoggingPolicy" : {
-            "EmitInterval" : "60",
-            "Enabled" : "True",
-            "S3BucketName" : { "Ref" : "S3Bucket" },
-            "S3BucketPrefix" : "ELB/Logs"
-          },
-          "ConnectionDrainingPolicy" : {
-            "Enabled" : "True",
-            "Timeout" : "60"
-          },
-          "HealthCheck" : {
-            "Target" : {
-              "Fn::Join" : [ "", [ "HTTP:", "80", "/health-check.html" ] ]
-            },
-            "HealthyThreshold" : "4",
-            "UnhealthyThreshold" : "10",
-            "Interval" : "60",
-            "Timeout" : "5"
-          },
-          "LoadBalancerName" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "ELB" ] ] },
-          "Listeners" : [ 
+    "WebServerELB": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "LoadBalancerAttributes": [
           {
-            "LoadBalancerPort" : "80",
-            "InstancePort" : "80",
-            "Protocol" : "HTTP"
+            "Key": "access_logs.s3.enabled",
+            "Value": "true"
           },
           {
-            "LoadBalancerPort" : "443",
-            "InstancePort" : "443",
-            "Protocol" : "HTTPS",
-            "InstanceProtocol" : "HTTPS",
-            "SSLCertificateId" : { "Fn::Join" : [ "", 
-              [ 
-                "arn:aws:acm:", 
-                { "Ref" : "AWS::Region" },
-                ":",
-                { "Ref" : "AWS::AccountId"},
-                ":certificate/",
-                { "Ref" : "CertificateID" } 
-              ] ] }
-          } ],
-          "Scheme" : "internet-facing",
-          "Subnets" : [ { "Ref" : "WebServerSubnet1" }, { "Ref" : "WebServerSubnet2" }  ],
-          "SecurityGroups" : [ { "Ref" : "WebServerELBSecurityGroup" } ],
-          "Tags" : [ 
-              { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "ELB-WebServers" ] ] } },
-              { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-              { "Key" : "StackType", "Value" : { "Ref" : "StackType" } } ]
-        }
+            "Key" : "access_logs.s3.bucket",
+            "Value" : { "Ref" : "S3Bucket" }
+          },
+          {
+            "Key" : "access_logs.s3.prefix",
+            "Value" : "ELB/Logs"
+          },
+          {
+            "Key" : "deletion_protection.enabled",
+            "Value" : "false"
+          },
+          {
+            "Key": "idle_timeout.timeout_seconds",
+            "Value": "60"
+          }
+        ],
+        "Name": { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "ELB" ] ] },
+        "Scheme": "internet-facing",
+        "SecurityGroups": [
+          {
+            "Ref" : "WebServerELBSecurityGroup"
+          }
+        ],
+        "Subnets": [
+          { "Ref" : "WebServerSubnet1" }, { "Ref" : "WebServerSubnet2" }
+        ],
+        "Tags" : [
+          { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "ELB-WebServers" ] ] } },
+          { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
+        ],
+        "Type": "application",
+        "IpAddressType": "ipv4"
+      }
+    },
+
+    "ELBHTTPListener" : {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "DefaultActions": [
+          {
+            "TargetGroupArn": { "Ref" : "ELBHTTPTargetGroup" },
+            "Type": "forward"
+          }
+        ],
+        "LoadBalancerArn": { "Ref" : "WebServerELB" },
+        "Port": 80,
+        "Protocol": "HTTP"
+      }
+    },
+
+    "ELBHTTPTargetGroup" : {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "HealthCheckIntervalSeconds": 60,
+        "HealthCheckPath":  "/health-check.html",
+        "HealthCheckPort": "80",
+        "HealthCheckProtocol": "HTTP",
+        "HealthCheckTimeoutSeconds": 5,
+        "HealthyThresholdCount": 4,
+        "Matcher": {
+          "HttpCode" : "200"
+        },
+        "Name": { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "ELBHTTPTargetGroup" ] ] },
+        "Port": 80,
+        "Protocol": "HTTP",
+        "TargetGroupAttributes": [
+          {
+            "Key" : "stickiness.enabled",
+            "Value" : "true"
+          }
+        ],
+        "TargetType": "instance",
+        "UnhealthyThresholdCount": 10,
+        "VpcId": { "Ref" : "VPC" }
+      }
+    },
+
+    "ELBHTTPSListener" : {
+      "Type": "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "Certificates" : [
+          {
+            "CertificateArn" : { "Fn::Join" : [ "", [ "arn:aws:acm:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":certificate/", { "Ref" : "CertificateID" } ] ] }
+          }
+        ],
+        "DefaultActions": [
+          {
+            "TargetGroupArn": { "Ref" : "ELBHTTPSTargetGroup" },
+            "Type": "forward"
+          }
+        ],
+        "LoadBalancerArn": { "Ref" : "WebServerELB" },
+        "Port": 443,
+        "Protocol": "HTTPS"
+      }
+    },
+
+    "ELBHTTPSTargetGroup" : {
+      "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties": {
+        "HealthCheckIntervalSeconds": 60,
+        "HealthCheckPath":  "/health-check.html",
+        "HealthCheckPort": "443",
+        "HealthCheckProtocol": "HTTPS",
+        "HealthCheckTimeoutSeconds": 5,
+        "HealthyThresholdCount": 4,
+        "Matcher": {
+          "HttpCode" : "200"
+        },
+        "Name": { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, { "Ref" : "StackType" }, "ELBHTTPSTargetGroup" ] ] },
+        "Port": 443,
+        "Protocol": "HTTPS",
+        "TargetGroupAttributes": [
+          {
+            "Key" : "stickiness.enabled",
+            "Value" : "true"
+          }
+        ],
+        "TargetType": "instance",
+        "UnhealthyThresholdCount": 10,
+        "VpcId": { "Ref" : "VPC" }
+      }
     },
 
     "WebServerAutoScalingGroup" : {
       "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "DependsOn" : "WebServerELB",
       "Properties" : {
         "Cooldown" : "500",
         "DesiredCapacity" : { "Ref" : "MinWebServerCount" },
         "HealthCheckGracePeriod" : "500",
         "HealthCheckType" : "ELB",
         "LaunchConfigurationName" : { "Ref" : "WebServerAutoScalingLaunchConfiguration" },
-        "LoadBalancerNames" : [ { "Ref" : "WebServerELB" } ],
+        "TargetGroupARNs" : [ { "Ref" : "ELBHTTPTargetGroup" }, { "Ref" : "ELBHTTPSTargetGroup" } ],
         "MaxSize" : { "Ref" : "MaxWebServerCount" },
         "MinSize" : { "Ref" : "MinWebServerCount" },
         "VPCZoneIdentifier" : [ { "Ref" : "WebServerSubnet1" }, { "Ref" : "WebServerSubnet2"} ],
@@ -977,49 +1109,49 @@
                   
                   "[CodeDeploy-Logs]\n",
                   "file = /var/log/aws/codedeploy-agent/codedeploy-agent.log\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "WebServer\n" ] ] },
+                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
                   "log_stream_name = {instance_id}/CodeDeploy-Agent-Logs\n",
                   "datetime_format = %Y-%m-%d %H:%M:%S\n",
                   "time_zone = UTC\n\n",
 
                   "[Cloud-Init-Output]\n",
                   "file = /var/log/cloud-init-output.log\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "WebServer\n" ] ] },
+                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
                   "log_stream_name = {instance_id}/Cloud-Init-Output-Logs\n",
                   "datetime_format = %Y-%m-%d %H:%M:%S\n",
                   "time_zone = UTC\n\n",
 
                   "[Cfn-Init-Cmd]\n",
                   "file = /var/log/cfn-init-cmd.log\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "WebServer\n" ] ] },
+                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
                   "log_stream_name = {instance_id}/Cfn-Init-Cmd-Logs\n",
                   "datetime_format = %Y-%m-%d %H:%M:%S %f\n",
                   "time_zone = UTC\n\n",
 
                   "[HTTP-Access]\n",
                   "file = /var/log/httpd/access_log\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "WebServer\n" ] ] },
+                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
                   "log_stream_name = {instance_id}/Httpd-Access-Logs\n",
                   "datetime_format = %d/%b/%Y:%H:%M:%S\n",
                   "time_zone = UTC\n\n",
 
                   "[HTTP-Error]\n",
                   "file = /var/log/httpd/error_log\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "WebServer\n" ] ] },
+                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
                   "log_stream_name = {instance_id}/Httpd-Error-Logs\n",
                   "datetime_format = %b %d %H:%M:%S %Y\n",
                   "time_zone = UTC\n\n",
 
                   "[Cron]\n",
                   "file = /var/log/cron\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "WebServer\n" ] ] },
+                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
                   "log_stream_name = {instance_id}/Cron-Logs\n",
                   "datetime_format = %b %d %H:%M:%S\n",
                   "time_zone = UTC\n\n",
 
                   "[Secure]\n",
                   "file = /var/log/secure\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "WebServer\n" ] ] },
+                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
                   "log_stream_name = {instance_id}/Secure-Logs\n",
                   "datetime_format = %b %d %H:%M:%S\n",
                   "time_zone = UTC\n\n"

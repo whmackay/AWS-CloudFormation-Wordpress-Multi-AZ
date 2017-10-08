@@ -10,3 +10,6 @@ gen
 
 # Folders
 scripts/*
+
+# Files
+temp.json
