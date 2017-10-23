@@ -1351,56 +1351,6 @@
          }
       },
 
-      "WebServerHealthyServerCountAlarm" : {
-        "Type" : "AWS::CloudWatch::Alarm",
-        "DependsOn" : [ "WebServerAutoScalingLaunchConfiguration", "WebServerELB" ],
-        "Properties" : {
-          "ActionsEnabled" : "True",
-          "AlarmActions" : [ { "Ref" : "SNSTopic" } ],
-          "AlarmDescription" : "Alert SNS Topic when healthy server count falls below minimum",
-          "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "AWS::StackName" }, "ELB-HealthyServerCount-Alarm"] ] },
-          "ComparisonOperator" : "LessThanOrEqualToThreshold",
-          "Dimensions" : [
-            {
-              "Name" : "LoadBalancerName",
-              "Value" : { "Ref" : "WebServerELB" }
-            }
-          ],
-          "EvaluationPeriods" : "1",
-          "MetricName" : "HealthyHostCount",
-          "Namespace" : "AWS/ELB",
-          "Period" : "300",
-          "Statistic" : "Sum",
-          "Threshold" : "1",
-          "Unit" : "Count"
-        }
-      },
-
-      "ELBRequestAlarm" : {
-        "Type" : "AWS::CloudWatch::Alarm",
-        "DependsOn" : [ "WebServerAutoScalingLaunchConfiguration", "WebServerELB" ],
-        "Properties" : {
-          "ActionsEnabled" : "True",
-          "AlarmActions" : [ { "Ref" : "SNSTopic" } ],
-          "AlarmDescription" : "Alert SNS that requests to ELB has exceeded threshold.",
-          "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "AWS::StackName" }, "ELB-Requests-Alarm"] ] },
-          "ComparisonOperator" : "GreaterThanOrEqualToThreshold",
-          "Dimensions" : [
-            {
-              "Name" : "LoadBalancerName",
-              "Value" : { "Ref" : "WebServerELB" }
-            }
-          ],
-          "EvaluationPeriods" : "1",
-          "MetricName" : "RequestCount",
-          "Namespace" : "AWS/ELB",
-          "Period" : "3600",
-          "Statistic" : "Sum",
-          "Threshold" : { "Ref" : "ELBRequestAlarmThreshold" },
-          "Unit" : "Count"
-        }
-      },
-
       "WebServerCodeDeployApplication":{
         "Type" : "AWS::CodeDeploy::Application",
         "DependsOn" : "WebServerAutoScalingLaunchConfiguration",
