@@ -454,6 +454,7 @@
                 "arn:aws:s3:::amazonlinux.*.amazonaws.com/*",
                 "arn:aws:s3:::codedeploydemobucket/*",
                 "arn:aws:s3:::aws-cloudwatch/*",
+                "arn:aws:s3:::us-west-2-birdwatcher-prod/*",
                 { "Fn::Join" : ["", [ "arn:aws:s3:::amazon-ssm-", { "Ref" : "AWS::Region" }, "/*" ]]},
                 { "Fn::Join" : ["", [ "arn:aws:s3:::aws-codedeploy-", { "Ref" : "AWS::Region" }, "/*" ]]}
               ]
@@ -1236,8 +1237,8 @@
                 "ignoreErrors" : "true"
               },
 
-              "download_Cloudwatch_monitoring_scripts" : {
-                "command" : "curl http://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.1.zip -O",
+              "douwnload_Cloudwatch_Agent" : {
+                "command" : "wget https://s3.amazonaws.com/amazoncloudwatch-agent/linux/amd64/latest/AmazonCloudWatchAgent.zip",
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               },
@@ -1326,11 +1327,10 @@
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing SSM Agent.'\n",
               "yum install -y /tmp/amazon-ssm-agent.rpm\n",
 
-              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing CloudWatch Monitoring.'\n",
-              "unzip /tmp/CloudWatchMonitoringScripts-1.2.1.zip -d /tmp\n",
-              "mkdir /root/scripts\n",
-              "mv /tmp/aws-scripts-mon /root/scripts/\n",
-              "(crontab -l; echo '*/5 * * * * /root/scripts/aws-scripts-mon/mon-put-instance-data.pl --mem-used-incl-cache-buff --mem-util --disk-space-util --disk-path=/ --from-cron') | crontab -\n",
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing CloudWatch Agent.'\n",
+              "unzip /tmp/AmazonCloudWatchAgent.zip -d /tmp\n",
+              "/tmp/install.sh\n",
+              "/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a start\n",
 
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Moving ELB health-check.html to /var/www/html.'\n",
               "mv /tmp/health-check.html /var/www/html/\n",
@@ -1769,7 +1769,7 @@
                   "s3:GetObjectAcl",
                   "s3:GetObjectVersion"
                 ],
-                "Resource": "arn:aws:s3:::amazon-ssm-us-east-1/*",
+                "Resource": { "Fn::Join" : [ "", [ "arn:aws:s3:::amazon-ssm-", { "Ref" : "AWS::Region"}, "/*"]]},
                 "Effect": "Allow"
               },
               {
@@ -1799,7 +1799,8 @@
                   "ssm:GetDocument",
                   "ssm:ListAssociations",
                   "ssm:UpdateAssociationStatus",
-                  "ssm:UpdateInstanceInformation"
+                  "ssm:UpdateInstanceInformation",
+                  "ssm:GetManifest"
                 ],
                 "Resource": "*"
               },
