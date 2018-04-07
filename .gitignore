@@ -10,6 +10,7 @@ gen
 
 # Folders
 scripts/*
+launchtemplate/*
 
 # Files
 temp.json
