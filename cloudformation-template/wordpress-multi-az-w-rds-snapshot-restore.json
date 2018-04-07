@@ -24,6 +24,10 @@
           "Parameters" : [ "CertificateID" ]
         },
         {
+          "Label" : { "default" : "CloudFront Distribution" },
+          "Parameters" : [ "CloudFrontAltCNAMES", "ACMCertificateID" ]
+        },
+        {
           "Label" : { "default" : "Database Configuration" },
           "Parameters" : [ "RDSInstanceType", "RDSMultiAZOption", "RDSServerStorage", "RDSEncryption", "DatabaseBackupRetentionPeriod" ]
         },
@@ -202,6 +206,18 @@
       "Description" : "Create Code Pipeline to enable automatic deployment.",
       "Default" : "True",
       "AllowedValues" : [ "True", "False" ]
+    },
+
+    "CloudFrontAltCNAMES": {
+      "Type": "String",
+      "Description": "Alternate CNAMES for the CloudFront Distribution.",
+      "Default": ""
+    },
+
+    "ACMCertificateID": {
+      "Type": "String",
+      "Description": "Certificate to use with the CloudFront Distribution. Must be in US-EAST-1.",
+      "Default": ""
     }
   },
 
@@ -353,7 +369,8 @@
   "Conditions" : {
 
     "UseRDSSnapshot" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "RDSSnapshotName" }, "" ] } ] }, 
-    "CreateCodePipeline" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "CodeDeploymentEnabled" }, "False" ] } ] } 
+    "CreateCodePipeline" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "CodeDeploymentEnabled" }, "False" ] } ] },
+    "UseAltCNAME" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "CloudFrontAltCNAMES" }, "" ] } ] }
 
   },
 
@@ -1440,7 +1457,7 @@
         "Type" : "AWS::S3::Bucket",
         "Properties" : {
           "Tags" : [
-            { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "AutoScalingGroup-WebServers" ] ] } },
+            { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "Logs" ] ] } },
             { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
             { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }         
           ]
@@ -1469,6 +1486,69 @@
          }
       },
 
+      "CloudFrontDistribution": {
+        "Type": "AWS::CloudFront::Distribution",
+        "DependsOn": ["WebServerELB", "S3Bucket"],
+        "Properties": {
+          "DistributionConfig": {
+            "Aliases" : [
+              {
+                "Fn::If" : [
+                  "UseAltCNAME",
+                  { "Ref" : "CloudFrontAltCNAMES"},
+                  { "Ref" : "AWS::NoValue"}
+                ]
+              }
+            ],
+            "DefaultCacheBehavior" :
+            {
+              "AllowedMethods" : [ "GET", "HEAD"],
+              "CachedMethods" : [ "GET", "HEAD" ],
+              "Compress" : "False",
+              "DefaultTTL" : "86400",
+              "ForwardedValues" : {
+                "QueryString": "False",
+                "Headers" : [ "Host", "Origin" ],
+              },
+              "MaxTTL" : "172800",
+              "MinTTL" : "43200",
+              "TargetOriginId" : { "Ref" : "WebServerELB" },
+              "ViewerProtocolPolicy" : "redirect-to-https"
+            },
+            "Enabled" : "True",
+            "IPV6Enabled" : "True",
+            "Logging" : {
+              "Bucket" : { "Fn::Join" : [ ".", [ { "Ref" : "S3Bucket" }, "s3.amazonaws.com" ] ] },
+              "IncludeCookies" : "True",
+              "Prefix" : "CloudFront"
+            },
+            "Origins" : [
+              {
+                "CustomOriginConfig" : {
+                  "HTTPPort" : "80",
+                  "HTTPSPort" : "443",
+                  "OriginProtocolPolicy" : "match-viewer",
+                  "OriginSSLProtocols" : [ "TLSv1", "TLSv1.1", "TLSv1.2" ]
+                },
+                "DomainName" : { "Fn::GetAtt" : [ "WebServerELB", "DNSName" ] },
+                "Id" : { "Ref" : "WebServerELB" }
+              }
+            ],
+            "PriceClass" : "PriceClass_All",
+            "HttpVersion" : "http2",
+            "ViewerCertificate" : {
+              "AcmCertificateArn" : { "Fn::Join" : [ "", [ "arn:aws:acm:", "us-east-1", ":", { "Ref" : "AWS::AccountId" }, ":certificate/", { "Ref" : "ACMCertificateID" } ] ] },
+              "MinimumProtocolVersion" : "TLSv1.1_2016",
+              "SslSupportMethod" : "sni-only"
+            }
+          },
+          "Tags": [
+            { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "CloudFrontDistribution" ] ] } },
+            { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
+            { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
+          ]
+        }
+      },
 
       "WebServerCodePipeline" : {
         "Type" : "AWS::CodePipeline::Pipeline",
