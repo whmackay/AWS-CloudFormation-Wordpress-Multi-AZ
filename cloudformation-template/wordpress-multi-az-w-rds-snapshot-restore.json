@@ -1353,7 +1353,11 @@
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Moving ELB health-check.html to /var/www/html.'\n",
               "mv /tmp/health-check.html /var/www/html/\n",
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'EC2 Configuration Completed.'\n",
-              "service httpd start\n"
+              "service httpd start\n",
+
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Cleaning up /tmp folder.'\n",
+              "rm -Rf /tmp/*\n",
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Clean-up of /tmp complete.'\n"
             ] ]
           }
         }
@@ -1502,19 +1506,89 @@
             ],
             "DefaultCacheBehavior" :
             {
-              "AllowedMethods" : [ "GET", "HEAD"],
-              "CachedMethods" : [ "GET", "HEAD" ],
-              "Compress" : "False",
-              "DefaultTTL" : "86400",
+              "AllowedMethods" : [ "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT" ],
+              "CachedMethods" : [ "GET", "HEAD", "OPTIONS" ],
+              "Compress" : "True",
               "ForwardedValues" : {
-                "QueryString": "False",
-                "Headers" : [ "Host", "Origin" ],
+                "Cookies" : {
+                  "Forward" : "whitelist",
+                  "WhitelistedNames" : [
+                    "PHPSESSID",
+                    "AWSALB",
+                    "comment_author_*",
+                    "comment_author_email_*",
+                    "comment_author_url_*",
+                    "wordpress_logged_in_*",
+                    "wordpress_test_cookie",
+                    "wordpress_sec_*",
+                    "wp-settings-*"
+                  ]
+                },
+                "QueryString" : "True",
+                "Headers" : [ "Host", "Origin" ]
               },
+              "DefaultTTL" : "86400",
               "MaxTTL" : "172800",
-              "MinTTL" : "43200",
+              "MinTTL" : "300",
               "TargetOriginId" : { "Ref" : "WebServerELB" },
-              "ViewerProtocolPolicy" : "redirect-to-https"
+              "ViewerProtocolPolicy" : "allow-all"
             },
+            "CacheBehaviors" : [
+              {
+                "AllowedMethods" : [ "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT" ],
+                "CachedMethods" : [ "GET", "HEAD", "OPTIONS" ],
+                "Compress" : "True",
+                "ForwardedValues" : {
+                  "Cookies" : {
+                    "Forward" : "whitelist",
+                    "WhitelistedNames" : [
+                      "PHPSESSID",
+                      "AWSALB",
+                      "comment_author_*",
+                      "comment_author_email_*",
+                      "comment_author_url_*",
+                      "wordpress_logged_in_*",
+                      "wordpress_test_cookie",
+                      "wordpress_sec_*",
+                      "wp-settings-*"
+                    ]
+                  },
+                  "Headers" : [ "Host", "Origin" ],
+                  "QueryString" : "True"
+                },
+                "PathPattern" : "/wp-login.php",
+                "SmoothStreaming" : "False",
+                "TargetOriginId" : { "Ref" : "WebServerELB" },
+                "ViewerProtocolPolicy" : "allow-all"
+              },
+              {
+                "AllowedMethods" : [ "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT" ],
+                "CachedMethods" : [ "GET", "HEAD", "OPTIONS" ],
+                "Compress" : "True",
+                "ForwardedValues" : {
+                  "Cookies" : {
+                    "Forward" : "whitelist",
+                    "WhitelistedNames" : [
+                      "PHPSESSID",
+                      "AWSALB",
+                      "comment_author_*",
+                      "comment_author_email_*",
+                      "comment_author_url_*",
+                      "wordpress_logged_in_*",
+                      "wordpress_test_cookie",
+                      "wordpress_sec_*",
+                      "wp-settings-*"
+                    ]
+                  },
+                  "Headers" : [ "Host", "Origin" ],
+                  "QueryString" : "True"
+                },
+                "PathPattern" : "/wp-admin/*",
+                "SmoothStreaming" : "False",
+                "TargetOriginId" : { "Ref" : "WebServerELB" },
+                "ViewerProtocolPolicy" : "allow-all"
+              }
+            ],
             "Enabled" : "True",
             "IPV6Enabled" : "True",
             "Logging" : {
@@ -1527,6 +1601,8 @@
                 "CustomOriginConfig" : {
                   "HTTPPort" : "80",
                   "HTTPSPort" : "443",
+                  "OriginKeepaliveTimeout" : "60",
+                  "OriginReadTimeout" : "30",
                   "OriginProtocolPolicy" : "match-viewer",
                   "OriginSSLProtocols" : [ "TLSv1", "TLSv1.1", "TLSv1.2" ]
                 },
