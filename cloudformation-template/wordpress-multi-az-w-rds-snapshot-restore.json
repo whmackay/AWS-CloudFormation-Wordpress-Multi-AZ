@@ -1355,6 +1355,8 @@
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'EC2 Configuration Completed.'\n",
               "service httpd start\n",
 
+              "yum clean all\n",
+
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Cleaning up /tmp folder.'\n",
               "rm -Rf /tmp/*\n",
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Clean-up of /tmp complete.'\n"
@@ -1529,7 +1531,7 @@
               },
               "DefaultTTL" : "86400",
               "MaxTTL" : "172800",
-              "MinTTL" : "300",
+              "MinTTL" : "86400",
               "TargetOriginId" : { "Ref" : "WebServerELB" },
               "ViewerProtocolPolicy" : "redirect-to-https"
             },
