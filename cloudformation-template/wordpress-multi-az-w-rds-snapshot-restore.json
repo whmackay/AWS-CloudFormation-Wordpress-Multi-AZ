@@ -13,7 +13,7 @@
         },
         {
           "Label" : { "default" : "Amazon EC2 Configuration" },
-          "Parameters" : [ "WebServerInstanceType", "WebServerInstanceMonitoring", "KeyName" ]
+          "Parameters" : [ "WebServerInstanceType", "KeyName" ]
         },
         {
           "Label" : { "default" : "Auto-scaling Configuration" },
@@ -37,7 +37,7 @@
         },
         {
           "Label" : { "default" : "Monitoring" },
-          "Parameters" : [ "SNSTopic", "ELBRequestAlarmThreshold" ]
+          "Parameters" : [ "SNSTopic", "WebServerInstanceMonitoring", "ELBRequestAlarmThreshold" ]
         }
       ],
       "ParameterLabels" : {
@@ -59,6 +59,7 @@
         "PROD",
         "DEV",
         "TEST",
+        "CERT",
         "OTHER"
       ],
       "Default" : "PROD"
@@ -197,7 +198,7 @@
 
     "S3Repository" : {
       "Type" : "String",
-      "Description" : "S3 bucket name for configuration, backup, etc. files.",
+      "Description" : "S3 bucket name for configuration, backup, etc. files as needed.",
       "Default" : "nonexistantbucket"
     },
 
