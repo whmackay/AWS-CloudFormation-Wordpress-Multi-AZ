@@ -21,11 +21,11 @@
         },
         {
           "Label" : { "default" : "Load Balancer Configuration" },
-          "Parameters" : [ "CertificateID" ]
+          "Parameters" : [ "ELBCertificate" ]
         },
         {
           "Label" : { "default" : "CloudFront Distribution" },
-          "Parameters" : [ "CloudFrontAltCNAMES", "ACMCertificateID" ]
+          "Parameters" : [ "CloudFrontAltCNAMES", "CloudFrontCertificate" ]
         },
         {
           "Label" : { "default" : "Database Configuration" },
@@ -85,7 +85,7 @@
       "Default" :  "master"
     },
 
-    "CertificateID" : {
+    "ELBCertificate" : {
       "Type" : "String",
       "Description" : "Public Certificate ID issued by Amazon Certificate Authority. Used to derive Arn for resource in the ELB.",
       "Default" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -214,7 +214,7 @@
       "Default": ""
     },
 
-    "ACMCertificateID": {
+    "CloudFrontCertificate": {
       "Type": "String",
       "Description": "Certificate to use with the CloudFront Distribution. Must be in US-EAST-1.",
       "Default": ""
@@ -1069,7 +1069,7 @@
       "Properties": {
         "Certificates" : [
           {
-            "CertificateArn" : { "Fn::Join" : [ "", [ "arn:aws:acm:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":certificate/", { "Ref" : "CertificateID" } ] ] }
+            "CertificateArn" : { "Fn::Join" : [ "", [ "arn:aws:acm:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":certificate/", { "Ref" : "ELBCertificate" } ] ] }
           }
         ],
         "DefaultActions": [
@@ -1624,7 +1624,7 @@
             "PriceClass" : "PriceClass_All",
             "HttpVersion" : "http2",
             "ViewerCertificate" : {
-              "AcmCertificateArn" : { "Fn::Join" : [ "", [ "arn:aws:acm:", "us-east-1", ":", { "Ref" : "AWS::AccountId" }, ":certificate/", { "Ref" : "ACMCertificateID" } ] ] },
+              "AcmCertificateArn" : { "Fn::Join" : [ "", [ "arn:aws:acm:", "us-east-1", ":", { "Ref" : "AWS::AccountId" }, ":certificate/", { "Ref" : "CloudFrontCertificate" } ] ] },
               "MinimumProtocolVersion" : "TLSv1.1_2016",
               "SslSupportMethod" : "sni-only"
             }
@@ -2056,18 +2056,6 @@
     "S3BucketName" : {
       "Description" : "Cloud Stack Temporary S3 Bucket",
       "Value" : { "Ref" : "S3Bucket" }
-    },
-    "ACMCertificateArn" : {
-      "Description" : "Arn for ELB's assigned ACM certificate.",
-      "Value" : { "Fn::Join" : [ "", 
-          [ 
-            "arn:aws:acm:", 
-            { "Ref" : "AWS::Region" },
-            ":",
-            { "Ref" : "AWS::AccountId"},
-            ":certificate/",
-            { "Ref" : "CertificateID" } 
-          ] ] }
     }
   }
 }
