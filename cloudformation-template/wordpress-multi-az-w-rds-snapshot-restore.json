@@ -2058,7 +2058,7 @@
       "Description" : "Cloud Stack Temporary S3 Bucket",
       "Value" : { "Ref" : "S3Bucket" }
     },
-    "Domain Name"  : {
+    "DomainName"  : {
       "Description" : "Cloud Stack Temporary S3 Bucket",
       "Value" : { "Ref" : "CloudFrontAltCNAMES" }
     }
