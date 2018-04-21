@@ -25,10 +25,10 @@
         },
         {
           "Label" : { "default" : "CloudFront Distribution" },
-          "Parameters" : [ "CloudFrontAltCNAMES", "CloudFrontCertificate" ]
+          "Parameters" : [ "DomainName", "CloudFrontCertificate" ]
         },
         {
-          "Label" : { "default" : "Database Configuration" },
+          "Label" : { "default" : "Database Service Configuration" },
           "Parameters" : [ "RDSInstanceType", "RDSMultiAZOption", "RDSServerStorage", "RDSEncryption", "DatabaseBackupRetentionPeriod" ]
         },
         {
@@ -209,7 +209,7 @@
       "AllowedValues" : [ "True", "False" ]
     },
 
-    "CloudFrontAltCNAMES": {
+    "DomainName": {
       "Type": "String",
       "Description": "Alternate CNAMES for the CloudFront Distribution.",
       "Default": ""
@@ -371,7 +371,7 @@
 
     "UseRDSSnapshot" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "RDSSnapshotName" }, "" ] } ] }, 
     "CreateCodePipeline" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "CodeDeploymentEnabled" }, "False" ] } ] },
-    "UseAltCNAME" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "CloudFrontAltCNAMES" }, "" ] } ] }
+    "UseAltCNAME" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "DomainName" }, "" ] } ] }
 
   },
 
@@ -1176,7 +1176,7 @@
 
               "/home/ec2-user/service-config.cfg" : {
                 "content" : { "Fn::Join" : ["", [
-                  { "Ref" : "CloudFrontAltCNAMES" } , "\n"
+                  { "Ref" : "DomainName" } , "\n"
                 ] ] },
                 "mode"  : "000600",
                 "owner" : "root",
@@ -1511,7 +1511,7 @@
               {
                 "Fn::If" : [
                   "UseAltCNAME",
-                  { "Ref" : "CloudFrontAltCNAMES"},
+                  { "Ref" : "DomainName"},
                   { "Ref" : "AWS::NoValue"}
                 ]
               }
@@ -2058,9 +2058,9 @@
       "Description" : "Cloud Stack Temporary S3 Bucket",
       "Value" : { "Ref" : "S3Bucket" }
     },
-    "DomainName"  : {
+    "ReferenceDomainName"  : {
       "Description" : "Cloud Stack Temporary S3 Bucket",
-      "Value" : { "Ref" : "CloudFrontAltCNAMES" }
+      "Value" : { "Ref" : "DomainName" }
     }
   }
 }
