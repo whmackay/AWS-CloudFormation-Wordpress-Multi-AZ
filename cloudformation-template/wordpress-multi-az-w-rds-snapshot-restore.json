@@ -1173,7 +1173,16 @@
                 "group" : "root"
               },
 
-              "/home/ec2-user/database-credentials.txt" : {
+              "/home/ec2-user/service-config.cfg" : {
+                "content" : { "Fn::Join" : ["", [
+                  { "Ref" : "CloudFrontAltCNAMES" } , "\n"
+                ] ] },
+                "mode"  : "000600",
+                "owner" : "root",
+                "group" : "root"
+              },
+
+              "/home/ec2-user/database-credentials.cfg" : {
                   "content" : { "Fn::Join" : ["", [
                   { "Fn::GetAtt" : [ "RDSInstance", "Endpoint.Address" ] }, "\n",
                   { "Ref" : "DBName" } , "\n",
