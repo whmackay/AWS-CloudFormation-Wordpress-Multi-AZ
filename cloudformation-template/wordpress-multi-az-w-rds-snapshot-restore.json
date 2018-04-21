@@ -1141,7 +1141,7 @@
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "AutoScalingGroup-WebServer" ] ] }, "PropagateAtLaunch" : "true" },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" }, "PropagateAtLaunch" : "true" },
           { "Key" : "StackType", "Value" : { "Ref" : "StackType" }, "PropagateAtLaunch" : "true" },
-          { "Key" : "Patch Group", "Value" : { "Fn:Join" : [ "-", [ { "Ref" : "ProjectName" }, { "Ref" : "StackType" } ]]}, "PropagateAtLaunch" : "true" }
+          { "Key" : "Patch Group", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "ProjectName" }, { "Ref" : "StackType" } ]]}, "PropagateAtLaunch" : "true" }
         ]
       }
     },
