@@ -17,11 +17,11 @@
         },
         {
           "Label" : { "default" : "Auto-scaling Configuration" },
-          "Parameters" : [ "MaxWebServerCount", "MinWebServerCount", "ScalingIncrement" ]
+          "Parameters" : [ "MaxWebServerCount", "MinWebServerCount", "ScalingIncrement", "AutoScalingCoolDown" ]
         },
         {
           "Label" : { "default" : "Load Balancer Configuration" },
-          "Parameters" : [ "ELBCertificate" ]
+          "Parameters" : [ "ELBCertificate", "ELBGracePeriod" ]
         },
         {
           "Label" : { "default" : "CloudFront Distribution" },
@@ -219,6 +219,18 @@
       "Type": "String",
       "Description": "Certificate to use with the CloudFront Distribution. Must be in US-EAST-1.",
       "Default": ""
+    },
+
+    "ELBGracePeriod": {
+      "Type": "String",
+      "Description": "Amount of time an instance is allowed before ELB will start healthchecks.",
+      "Default": "600"
+    },
+
+    "AutoScalingCoolDown": {
+      "Type": "String",
+      "Description": "Amount of grace time between scaling actions by AutoScaling.",
+      "Default": "600"
     }
   },
 
@@ -1116,9 +1128,9 @@
       "Type" : "AWS::AutoScaling::AutoScalingGroup",
       "DependsOn" : "WebServerELB",
       "Properties" : {
-        "Cooldown" : "500",
+        "Cooldown" : { "Ref" : "AutoScalingCoolDown" },
         "DesiredCapacity" : { "Ref" : "MinWebServerCount" },
-        "HealthCheckGracePeriod" : "500",
+        "HealthCheckGracePeriod" : { "Ref" : "ELBGracePeriod" },
         "HealthCheckType" : "ELB",
         "LaunchConfigurationName" : { "Ref" : "WebServerAutoScalingLaunchConfiguration" },
         "TargetGroupARNs" : [ { "Ref" : "ELBHTTPTargetGroup" }, { "Ref" : "ELBHTTPSTargetGroup" } ],
@@ -1128,7 +1140,8 @@
         "Tags" : [ 
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "AutoScalingGroup-WebServer" ] ] }, "PropagateAtLaunch" : "true" },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" }, "PropagateAtLaunch" : "true" },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" }, "PropagateAtLaunch" : "true" }
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" }, "PropagateAtLaunch" : "true" },
+          { "Key" : "Patch Group", "Value" : { "Fn:Join" : [ "-", [ { "Ref" : "ProjectName" }, { "Ref" : "StackType" } ]]}, "PropagateAtLaunch" : "true" }
         ]
       }
     },
