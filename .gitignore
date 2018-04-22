@@ -11,6 +11,7 @@ gen
 # Folders
 scripts/*
 launchtemplate/*
+launch-configuration-templates/*
 
 # Files
 temp.json
