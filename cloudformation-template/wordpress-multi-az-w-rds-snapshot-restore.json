@@ -962,7 +962,7 @@
           ]
         },
         "Engine" : "MySQL",
-        "EngineVersion" : "5.6.27",
+        "EngineVersion" : "5.6.39",
         "MasterUsername" : {
           "Fn::If" : [ 
             "UseRDSSnapshot",
