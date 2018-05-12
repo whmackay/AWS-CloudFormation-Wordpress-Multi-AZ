@@ -420,7 +420,7 @@
       "DependsOn" : [ "VPC", "VPCFlowLogIAMRole" ],
       "Properties" : {
         "DeliverLogsPermissionArn" : { "Fn::GetAtt" : [ "VPCFlowLogIAMRole" , "Arn" ] },
-        "LogGroupName" : { "Fn::Join" : [ "", [ { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/VPC" ] ] },
+        "LogGroupName" : { "Fn::Join" : [ "", [ { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/", { "Ref" : "AWS::StackName" }, "/VPC" ] ] },
         "ResourceId" : { "Ref" : "VPC" },
         "ResourceType" : "VPC",
         "TrafficType" : "ALL"
@@ -1207,7 +1207,7 @@
                             },
                             "/",
                             { "Ref" : "AWS::StackName" },
-                            "\n"
+                            "/Instance\n"
                           ]
                         ]
                       },
@@ -1230,7 +1230,7 @@
                             },
                             "/",
                             { "Ref" : "AWS::StackName" },
-                            "\n"
+                            "/Instance\n"
                           ]
                         ]
                       },
@@ -1253,7 +1253,7 @@
                             },
                             "/",
                             { "Ref" : "AWS::StackName" },
-                            "\n"
+                            "/Instance\n"
                           ]
                         ]
                       },
@@ -1276,7 +1276,7 @@
                             },
                             "/",
                             { "Ref" : "AWS::StackName" },
-                            "\n"
+                            "/Instance\n"
                           ]
                         ]
                       },
