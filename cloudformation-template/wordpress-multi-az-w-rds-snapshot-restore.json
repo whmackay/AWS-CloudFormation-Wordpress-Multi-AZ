@@ -358,10 +358,10 @@
     },
 
     "AWSRegionArch2AMI" : {
-      "us-east-1"        : {"PV64" : "ami-2a69aa47", "HVM64" : "ami-2452275e", "HVMG2" : "ami-2e5e9c43"},
-      "us-east-2"        : {"PV64" : "ami-2a69aa47", "HVM64" : "ami-e97c548c", "HVMG2" : "ami-2e5e9c43"},
-      "us-west-1"        : {"PV64" : "ami-a2490dc2", "HVM64" : "ami-ee03078e", "HVMG2" : "ami-fd76329d"},
-      "us-west-2"        : {"PV64" : "ami-7f77b31f", "HVM64" : "ami-7707a10f", "HVMG2" : "ami-83b770e3"}
+      "us-east-1"        : {"PV64" : "ami-2a69aa47", "HVM64" : "ami-4dd18837", "HVMG2" : "ami-2e5e9c43"},
+      "us-east-2"        : {"PV64" : "ami-2a69aa47", "HVM64" : "ami-e282a987", "HVMG2" : "ami-2e5e9c43"},
+      "us-west-1"        : {"PV64" : "ami-a2490dc2", "HVM64" : "ami-d9ababb9", "HVMG2" : "ami-fd76329d"},
+      "us-west-2"        : {"PV64" : "ami-7f77b31f", "HVM64" : "ami-1f0abe67", "HVMG2" : "ami-83b770e3"}
     },
 
     "ELBPrinciple" : {
@@ -1152,10 +1152,209 @@
       "Metadata" : {
         "AWS::CloudFormation::Init" : {
           "configSets" : {
-            "WebServer" : [ "config1" ]
+              "ascending" : [
+                "EC2Standard",
+                "WebServer"
+              ]
           },
 
-          "config1" : {
+          "EC2Standard": {
+            "packages": {
+              "yum": {
+                "wget": [],
+                "awslogs" : [],
+                "ruby" : []
+              }
+            },
+            "files": {
+              "/etc/awslogs/awscli.conf": {
+                "content" : {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[plugins]\n",
+                      "cwlogs = cwlogs\n",
+                      "[default]\n",
+                      { "Fn::Join" : [ "", [ "region = ", { "Ref" : "AWS::Region" }, "\n" ] ] }
+                    ]
+                  ]
+                },
+                "mode": "000600",
+                "owner": "root",
+                "group": "root"
+              },
+
+              "/etc/awslogs/awslogs.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[general]\n",
+                      "state_file = /var/awslogs/state/agent-state\n\n",
+                      "[Cloud-Init-Output]\n",
+                      "file = /var/log/cloud-init-output.log\n",
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "log_group_name = ",
+                            {
+                              "Ref": "ProjectName"
+                            },
+                            "/",
+                            {
+                              "Ref": "StackType"
+                            },
+                            "/VPNServer\n"
+                          ]
+                        ]
+                      },
+                      "log_stream_name = {instance_id}/Cloud-Init-Output-Logs\n",
+                      "datetime_format = %Y-%m-%d %H:%M:%S\n",
+                      "time_zone = UTC\n\n",
+                      "[Cfn-Init-Cmd]\n",
+                      "file = /var/log/cfn-init-cmd.log\n",
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "log_group_name = ",
+                            {
+                              "Ref": "ProjectName"
+                            },
+                            "/",
+                            {
+                              "Ref": "StackType"
+                            },
+                            "/VPNServer\n"
+                          ]
+                        ]
+                      },
+                      "log_stream_name = {instance_id}/Cfn-Init-Cmd-Logs\n",
+                      "datetime_format = %Y-%m-%d %H:%M:%S %f\n",
+                      "time_zone = UTC\n\n",
+                      "[Cron]\n",
+                      "file = /var/log/cron\n",
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "log_group_name = ",
+                            {
+                              "Ref": "ProjectName"
+                            },
+                            "/",
+                            {
+                              "Ref": "StackType"
+                            },
+                            "/VPNServer\n"
+                          ]
+                        ]
+                      },
+                      "log_stream_name = {instance_id}/Cron-Logs\n",
+                      "datetime_format = %b %d %H:%M:%S\n",
+                      "time_zone = UTC\n\n",
+                      "[Secure]\n",
+                      "file = /var/log/secure\n",
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "log_group_name = ",
+                            {
+                              "Ref": "ProjectName"
+                            },
+                            "/",
+                            {
+                              "Ref": "StackType"
+                            },
+                            "/VPNServer\n"
+                          ]
+                        ]
+                      },
+                      "log_stream_name = {instance_id}/Secure-Logs\n",
+                      "datetime_format = %b %d %H:%M:%S\n",
+                      "time_zone = UTC\n\n"
+                    ]
+                  ]
+                },
+                "mode": "000600",
+                "owner": "root",
+                "group": "root"
+              }
+            },
+            "commands": {
+
+              "Awslogs_a_create_cloudwatch_state_dir": {
+                "command": "mkdir /var/awslogs/ && mkdir /var/awslogs/state/",
+                "cwd": "/tmp",
+                "ignoreErrors": "true"
+              },
+
+              "Awslogs_b_enable_cloudwatch_logs": {
+                "command": "systemctl enable awslogsd.service",
+                "cwd": "/tmp",
+                "ignoreErrors": "true"
+              },
+
+              "Awslogs_c_start_cloudwatch_logs": {
+                "command": "systemctl start awslogsd",
+                "cwd": "/tmp",
+                "ignoreErrors": "true"
+              },
+
+              "Cloudwatch_Agent_a_download_Cloudwatch_Agent": {
+                "command": "wget https://s3.amazonaws.com/amazoncloudwatch-agent/linux/amd64/latest/AmazonCloudWatchAgent.zip",
+                "cwd": "/tmp",
+                "ignoreErrors": "true"
+              },
+
+              "Cloudwatch_Agent_b_unzip_Cloudwatch_Agent": {
+                "command": "/usr/bin/unzip -o /tmp/AmazonCloudWatchAgent.zip -d /tmp",
+                "cwd": "/tmp",
+                "ignoreErrors": "true"
+              },
+
+              "Cloudwatch_Agent_c_install_Cloudwatch_Agent": {
+                "command": "/tmp/install.sh",
+                "cwd": "/tmp",
+                "ignoreErrors": "true"
+              },
+
+              "Cloudwatch_Agent_d_start_Cloudwatch_Agent": {
+                "command": "/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a start",
+                "cwd": "/tmp",
+                "ignoreErrors": "true"
+              },
+
+              "ssm_agent_a_install_ssm_agent": {
+                "command": "yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm",
+                "cwd": "/tmp",
+                "ignoreErrors": "true"
+              },
+
+              "code_deploy_agent_a_download_code_deploy_agent" : {
+                "command" : { "Fn::Join" : [ "", [ "wget https://aws-codedeploy-", { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/latest/install" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "code_deploy_agent_b_chmod_code_deploy_agent" : {
+                "command" : "chmod +x /tmp/install",
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "code_deploy_agent_c_install_code_deploy_agent" : {
+                "command" : "/tmp/install auto",
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              }
+
+            }
+          },
+
+          "WebServer" : {
             "packages" : {
               "yum" : {
                 "httpd" : [],
@@ -1164,8 +1363,6 @@
                 "php" : [],
                 "php-mysql" : [],
                 "php-mbstring" : [],
-                "ruby" : [],
-                "wget" : [],
                 "perl-Switch" : [],
                 "perl-DateTime" : [],
                 "perl-Sys-Syslog" : [],
@@ -1206,91 +1403,14 @@
                 "mode"  : "000600",
                 "owner" : "root",
                 "group" : "root"
-              },
-
-              "/home/ec2-user/CloudWatch-Logs-Config.cfg" : {
-                  "content" : { "Fn::Join" : ["", [
-                  "[general]\n",
-                  "state_file = /var/awslogs/state/agent-state\n\n",
-                  
-                  "[CodeDeploy-Logs]\n",
-                  "file = /var/log/aws/codedeploy-agent/codedeploy-agent.log\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
-                  "log_stream_name = {instance_id}/CodeDeploy-Agent-Logs\n",
-                  "datetime_format = %Y-%m-%d %H:%M:%S\n",
-                  "time_zone = UTC\n\n",
-
-                  "[Cloud-Init-Output]\n",
-                  "file = /var/log/cloud-init-output.log\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
-                  "log_stream_name = {instance_id}/Cloud-Init-Output-Logs\n",
-                  "datetime_format = %Y-%m-%d %H:%M:%S\n",
-                  "time_zone = UTC\n\n",
-
-                  "[Cfn-Init-Cmd]\n",
-                  "file = /var/log/cfn-init-cmd.log\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
-                  "log_stream_name = {instance_id}/Cfn-Init-Cmd-Logs\n",
-                  "datetime_format = %Y-%m-%d %H:%M:%S %f\n",
-                  "time_zone = UTC\n\n",
-
-                  "[HTTP-Access]\n",
-                  "file = /var/log/httpd/access_log\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
-                  "log_stream_name = {instance_id}/Httpd-Access-Logs\n",
-                  "datetime_format = %d/%b/%Y:%H:%M:%S\n",
-                  "time_zone = UTC\n\n",
-
-                  "[HTTP-Error]\n",
-                  "file = /var/log/httpd/error_log\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
-                  "log_stream_name = {instance_id}/Httpd-Error-Logs\n",
-                  "datetime_format = %b %d %H:%M:%S %Y\n",
-                  "time_zone = UTC\n\n",
-
-                  "[Cron]\n",
-                  "file = /var/log/cron\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
-                  "log_stream_name = {instance_id}/Cron-Logs\n",
-                  "datetime_format = %b %d %H:%M:%S\n",
-                  "time_zone = UTC\n\n",
-
-                  "[Secure]\n",
-                  "file = /var/log/secure\n",
-                  { "Fn::Join" : [ "", [ "log_group_name = ", { "Ref" : "ProjectName" }, "/", { "Ref" : "StackType"}, "/WebServer\n" ] ] },
-                  "log_stream_name = {instance_id}/Secure-Logs\n",
-                  "datetime_format = %b %d %H:%M:%S\n",
-                  "time_zone = UTC\n\n"
-                ] ] },
-                "mode"  : "000600",
-                "owner" : "root",
-                "group" : "root"
               }
 
             },
 
             "commands" : {
 
-              "download_awslogs_agent" : {
-                "command" : "curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O",
-                "cwd" : "/tmp",
-                "ignoreErrors" : "true"
-              },
-
-              "douwnload_Cloudwatch_Agent" : {
-                "command" : "wget https://s3.amazonaws.com/amazoncloudwatch-agent/linux/amd64/latest/AmazonCloudWatchAgent.zip",
-                "cwd" : "/tmp",
-                "ignoreErrors" : "true"
-              },
-
-              "download_codedeploy_agent" : {
-                "command" : { "Fn::Join" : [ "", [ "wget https://aws-codedeploy-", { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/latest/install" ] ] },
-                "cwd" : "/tmp",
-                "ignoreErrors" : "true"
-              },
-
-              "download_ssm_agent" : {
-                "command" : { "Fn::Join" : [ "", [ "wget https://amazon-ssm-", { "Ref" : "AWS::Region" }, ".s3.amazonaws.com/latest/linux_amd64/amazon-ssm-agent.rpm" ] ] },
+              "ELB_health_check_a_move_ELB_healthcheck_file" : {
+                "command" : "mv /tmp/health-check.html /var/www/html/",
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               }
@@ -1305,22 +1425,6 @@
                   "enabled" : "true",
                   "ensureRunning" : "true",
                   "sources" : [ "/var/www/html" ]
-                },
-
-                "awslogs" : {
-                  "enabled" : "true",
-                  "ensureRunning" : "true",
-                  "files" : [ "/var/awslogs/etc/awslogs.conf"]
-                },
-
-                "codedeploy-agent" : {
-                  "enabled" : "true",
-                  "ensureRunning" : "true"
-                },
-
-                "amazon-ssm-agent" : {
-                  "enabled" : "true",
-                  "ensureRunning" : "true"
                 }
 
               }
@@ -1350,38 +1454,17 @@
 
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Updating cfn-init using Yum.'\n",
               "yum update -y aws-cfn-bootstrap\n",
-              "yum update -y\n",
 
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Executing cfn-init.'\n",
-              "/opt/aws/bin/cfn-init --stack ", { "Ref" : "AWS::StackName" }, " --configsets WebServer --resource WebServerAutoScalingLaunchConfiguration --region ", { "Ref" : "AWS::Region" }, "\n",
+              "/opt/aws/bin/cfn-init --stack ", { "Ref" : "AWS::StackName" }, " --configsets ascending --resource WebServerAutoScalingLaunchConfiguration --region ", { "Ref" : "AWS::Region" }, " > /var/log/cfn-init.error.log\n",
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Completed cfn-init'\n",
-
-              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing AWSLogs Agent.'\n",
-              "chmod +x /tmp/awslogs-agent-setup.py\n",
-              { "Fn::Join" : [ "", [ "/tmp/awslogs-agent-setup.py -n -r ", { "Ref" : "AWS::Region" }, " -c /home/ec2-user/CloudWatch-Logs-Config.cfg\n" ] ] },
-
-              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing CodeDeploy Agent.'\n",
-              "chmod +x /tmp/install\n",
-              "/tmp/install auto\n",
-
-              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing SSM Agent.'\n",
-              "yum install -y /tmp/amazon-ssm-agent.rpm\n",
-
-              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing CloudWatch Agent.'\n",
-              "cd /tmp\n",
-              "unzip -o /tmp/AmazonCloudWatchAgent.zip -d /tmp\n",
-              "/tmp/install.sh\n",
-              "/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -m ec2 -a start\n",
-
-              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Moving ELB health-check.html to /var/www/html.'\n",
-              "mv /tmp/health-check.html /var/www/html/\n",
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'EC2 Configuration Completed.'\n",
-              "service httpd start\n",
 
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Cleaning up left over files from yum installations.'\n",
               "yum clean all\n",
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Completed cleaning up after yum.'\n",
 
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Cleaning up /tmp folder.'\n",
-              "rm -Rf /tmp/*\n",
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Clean-up of /tmp complete.'\n"
             ] ]
           }
