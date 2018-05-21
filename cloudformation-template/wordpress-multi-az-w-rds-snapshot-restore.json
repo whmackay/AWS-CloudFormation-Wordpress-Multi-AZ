@@ -236,13 +236,13 @@
 
   "Mappings" : {
     "SubnetConfig" : {
-      "VPC"     : { "CIDR" : "10.0.0.0/16" },
-      "PublicSubnet1"  : { "CIDR" : "10.0.0.0/24" },
-      "PublicSubnet2"  : { "CIDR" : "10.0.1.0/24" },
-      "WebServerSubnet1"  : { "CIDR" : "10.0.10.0/24" },
-      "WebServerSubnet2"  : { "CIDR" : "10.0.11.0/24" },
-      "RDSSubnet1"  : { "CIDR" : "10.0.20.0/24" },
-      "RDSSubnet2"  : { "CIDR" : "10.0.21.0/24" }
+      "VPC"     : { "CIDR" : "10.0.0.0/25" },
+      "PublicSubnet1"  : { "CIDR" : "10.0.0.0/28" },
+      "PublicSubnet2"  : { "CIDR" : "10.0.0.16/28" },
+      "WebServerSubnet1"  : { "CIDR" : "10.0.0.32/28" },
+      "WebServerSubnet2"  : { "CIDR" : "10.0.0.48/28" },
+      "RDSSubnet1"  : { "CIDR" : "10.0.0.64/28" },
+      "RDSSubnet2"  : { "CIDR" : "10.0.0.80/28" }
     },
 
     "AWSInstanceType2Arch" : {
@@ -700,8 +700,20 @@
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "false",
-        "CidrBlock" : "192.168.1.0/24",
+        "CidrBlock" : "192.168.0.0/20",
         "PortRange" : { "From" : "22", "To" : "22" }
+      }
+    },
+
+    "LANPersonalInboundICMPNetworkAclEntry" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "WebTrafficNetworkAcl" },
+        "RuleNumber" : "103",
+        "Protocol" : "1",
+        "RuleAction" : "allow",
+        "Egress" : "false",
+        "CidrBlock" : "192.168.0.0/20"
       }
     },
 
@@ -820,6 +832,19 @@
       }
     },
 
+    "LANPersonalInboundRDSNetworkAclEntry" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "RDSNetworkAcl" },
+        "RuleNumber" : "101",
+        "Protocol" : "6",
+        "RuleAction" : "allow",
+        "Egress" : "false",
+        "CidrBlock" : "192.168.0.0/20" },
+        "PortRange" : { "From" : "3306", "To" : "3306" }
+      }
+    },
+
     "OutboundRDSNetworkAclEntry" : {
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
@@ -829,6 +854,19 @@
         "RuleAction" : "allow",
         "Egress" : "true",
         "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "VPC", "CIDR" ]},
+        "PortRange" : { "From" : "0", "To" : "65535" }
+      }
+    },
+
+    "LANPersonalOutboundRDSNetworkAclEntry" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "RDSNetworkAcl" },
+        "RuleNumber" : "101",
+        "Protocol" : "6",
+        "RuleAction" : "allow",
+        "Egress" : "true",
+        "CidrBlock" : { "CidrBlock" : "192.168.0.0/20" },
         "PortRange" : { "From" : "0", "To" : "65535" }
       }
     },
@@ -871,7 +909,7 @@
             "IpProtocol" : "tcp",
             "FromPort" : "22",
             "ToPort" : "22",
-            "CidrIp" : "192.168.1.0/24"
+            "CidrIp" : "192.168.0.0/20"
           }
         ],
         "Tags" : [
