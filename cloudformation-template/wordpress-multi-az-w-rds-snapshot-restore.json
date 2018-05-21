@@ -381,7 +381,7 @@
 
   "Conditions" : {
 
-    "UseRDSSnapshot" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "RDSSnapshotName" }, "" ] } ] }, 
+    "UseRDSSnapshot" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "RDSSnapshotName" }, "" ] } ] },
     "CreateCodePipeline" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "CodeDeploymentEnabled" }, "False" ] } ] },
     "UseAltCNAME" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "DomainName" }, "" ] } ] }
 
@@ -410,7 +410,7 @@
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "VPC" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }      
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
     },
@@ -537,7 +537,7 @@
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "WebServerSubnet1" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
     },
@@ -552,7 +552,7 @@
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "WebServerSubnet2" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
     },
@@ -566,7 +566,7 @@
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "RDSSubnet1" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
     },
@@ -580,7 +580,7 @@
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "RDSSubnet2" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
     },
@@ -591,7 +591,7 @@
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "IGW" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
     },
@@ -611,10 +611,10 @@
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "Public-RouteTable" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
-    },   
+    },
 
     "PublicRoute" : {
       "Type" : "AWS::EC2::Route",
@@ -661,7 +661,7 @@
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "NACL-WebTraffic" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
     },
@@ -814,7 +814,7 @@
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "RouteTable-RDS" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
     },
@@ -840,7 +840,7 @@
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "false",
-        "CidrBlock" : "192.168.0.0/20" },
+        "CidrBlock" : "192.168.0.0/20",
         "PortRange" : { "From" : "3306", "To" : "3306" }
       }
     },
@@ -853,7 +853,7 @@
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "true",
-        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "VPC", "CIDR" ]},
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "VPC", "CIDR" ] },
         "PortRange" : { "From" : "0", "To" : "65535" }
       }
     },
@@ -910,12 +910,18 @@
             "FromPort" : "22",
             "ToPort" : "22",
             "CidrIp" : "192.168.0.0/20"
+          },
+          {
+            "IpProtocol" : "icmp",
+            "FromPort" : "-1",
+            "ToPort" : "-1",
+            "CidrIp" : "192.168.0.0/20"
           }
         ],
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "EC2-SecurityGroup" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
     },
@@ -927,36 +933,36 @@
         "VpcId" : { "Ref" : "VPC" },
         "SecurityGroupIngress" : [ {
           "IpProtocol" : "tcp",
-          "FromPort" : "80",  
+          "FromPort" : "80",
           "ToPort" : "80",
-          "CidrIp" : "0.0.0.0/0"        
+          "CidrIp" : "0.0.0.0/0"
         },
         {
           "IpProtocol" : "tcp",
-          "FromPort" : "443",  
+          "FromPort" : "443",
           "ToPort" : "443",
-          "CidrIp" : "0.0.0.0/0"        
+          "CidrIp" : "0.0.0.0/0"
         } ],
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "ELB-SecurityGroup" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
-      }     
+      }
     },
 
     "RDSSubnetGroup" : {
       "Type" : "AWS::RDS::DBSubnetGroup",
       "Properties" : {
         "DBSubnetGroupDescription" : "description",
-        "SubnetIds" : [ 
-          { "Ref" : "RDSSubnet1" }, 
+        "SubnetIds" : [
+          { "Ref" : "RDSSubnet1" },
           { "Ref" : "RDSSubnet2" }
         ],
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "RDSSubnetGroup" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
     },
@@ -967,16 +973,24 @@
       "Properties" : {
         "GroupDescription": "Open database for access",
         "VpcId" : { "Ref" : "VPC" },
-        "SecurityGroupIngress" : [{
-          "IpProtocol" : "tcp",
-          "FromPort" : "3306",
-          "ToPort" : "3306",
-          "SourceSecurityGroupId" : { "Ref" : "EC2WebServerSecurityGroup" }
-        }],
+        "SecurityGroupIngress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "3306",
+            "ToPort" : "3306",
+            "SourceSecurityGroupId" : { "Ref" : "EC2WebServerSecurityGroup" }
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "3306",
+            "ToPort" : "3306",
+            "Cidrip" : "192.168.0.0/20"
+          }
+        ],
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "SecurityGroup-RDS" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
     },
@@ -1009,7 +1023,7 @@
         "Engine" : "MySQL",
         "EngineVersion" : "5.6.39",
         "MasterUsername" : {
-          "Fn::If" : [ 
+          "Fn::If" : [
             "UseRDSSnapshot",
             { "Ref" : "AWS::NoValue" },
             { "Ref" : "DBUserName" }
@@ -1030,7 +1044,7 @@
         "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "RDS" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }  
+          { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
       }
     },
@@ -1216,7 +1230,7 @@
         "MaxSize" : { "Ref" : "MaxWebServerCount" },
         "MinSize" : { "Ref" : "MinWebServerCount" },
         "VPCZoneIdentifier" : [ { "Ref" : "WebServerSubnet1" }, { "Ref" : "WebServerSubnet2"} ],
-        "Tags" : [ 
+        "Tags" : [
           { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "AutoScalingGroup-WebServer" ] ] }, "PropagateAtLaunch" : "true" },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" }, "PropagateAtLaunch" : "true" },
           { "Key" : "StackType", "Value" : { "Ref" : "StackType" }, "PropagateAtLaunch" : "true" },
@@ -1436,6 +1450,12 @@
                 "command" : "/tmp/install auto",
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
+              },
+
+              "code_deploy_agent_d_stop_code_deploy_agent" : {
+                "command" : "service codedeploy-agent stop",
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
               }
 
             }
@@ -1500,6 +1520,12 @@
                 "command" : "mv /tmp/health-check.html /var/www/html/",
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
+              },
+
+              "code_deploy_agent_a_start_code_deploy_agent" : {
+                "command" : "service codedeploy-agent start",
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
               }
 
             },
@@ -1522,20 +1548,20 @@
       "Properties" : {
         "AssociatePublicIpAddress" : "True",
         "EbsOptimized" : "False",
-        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" }, 
+        "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
                      { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "WebServerInstanceType" }, "Arch" ] } ] },
         "InstanceMonitoring" : { "Ref" : "WebServerInstanceMonitoring" },
         "InstanceType" : { "Ref" : "WebServerInstanceType" },
         "IamInstanceProfile" : { "Fn::GetAtt" : [ "EC2InstanceProfile", "Arn"] },
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "EC2WebServerSecurityGroup" } ],
-        "UserData" : { 
-          "Fn::Base64" : { 
+        "UserData" : {
+          "Fn::Base64" : {
             "Fn::Join" : ["", [
               "#!/bin/bash -v\n",
               "aws configure set default.region ", { "Ref" : "AWS::Region" }, " \n",
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'EC2 Configuration Started.'\n",
-              
+
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Updating all packages using Yum.'\n",
               "yum update -y\n",
 
@@ -1592,11 +1618,11 @@
             "AlarmDescription" : "Alarm to trigger a scale up event on the scaling group when CPU gets to high.",
             "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "AWS::StackName" }, "AutoScaling-ScaleUp-Alarm" ] ] },
             "ComparisonOperator" : "GreaterThanOrEqualToThreshold",
-            "Dimensions" : [ 
-              { 
+            "Dimensions" : [
+              {
                 "Name" : "AutoScalingGroupName",
                 "Value" : { "Ref" : "WebServerAutoScalingGroup" }
-              } 
+              }
             ],
             "EvaluationPeriods" : "5",
             "MetricName" : "CPUUtilization",
@@ -1617,11 +1643,11 @@
             "AlarmDescription" : "Alarm to trigger a scale up event on the scaling group when CPU gets to high.",
             "AlarmName" : { "Fn::Join" : [ "-" , [ { "Ref" : "AWS::StackName" }, "AutoScaling-ScaleDown-Alarm" ] ] },
             "ComparisonOperator" : "LessThanOrEqualToThreshold",
-            "Dimensions" : [ 
-              { 
+            "Dimensions" : [
+              {
                 "Name" : "AutoScalingGroupName",
                 "Value" : { "Ref" : "WebServerAutoScalingGroup" }
-              } 
+              }
             ],
             "EvaluationPeriods" : "5",
             "MetricName" : "CPUUtilization",
@@ -1658,7 +1684,7 @@
           "Tags" : [
             { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "Logs" ] ] } },
             { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
-            { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }         
+            { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
           ]
         }
       },
@@ -1833,10 +1859,10 @@
           "Name" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "CodePipeline" ] ] },
           "RestartExecutionOnUpdate" : "True",
           "RoleArn" : { "Fn::Join" : [ "", [ "arn:aws:iam::" , { "Ref" : "AWS::AccountId" }, ":role/", { "Ref" : "WebServerCodePipelineRole" } ] ] },
-          "Stages" : [ 
+          "Stages" : [
             {
               "Name" :  { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "Source" ] ] },
-              "Actions" : [ 
+              "Actions" : [
                 {
                   "ActionTypeId" : {
                       "Category" : "Source",
@@ -1849,7 +1875,7 @@
                     "RepositoryName" : { "Ref" : "CodeCommitRepositoryName" }
                   },
                   "Name" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "Source-Stage-Action" ] ] },
-                  "OutputArtifacts" : [ 
+                  "OutputArtifacts" : [
                     {
                       "Name" : "MyApp"
                     }
@@ -1860,7 +1886,7 @@
             },
             {
               "Name" :  { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "Deploy" ] ] },
-              "Actions" : [ 
+              "Actions" : [
                 {
                   "ActionTypeId" : {
                       "Category" : "Deploy",
@@ -1874,8 +1900,8 @@
                   },
                   "Name" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "Deploy-Stage-Action" ] ] },
                   "InputArtifacts" : [
-                    { 
-                      "Name" : "MyApp" 
+                    {
+                      "Name" : "MyApp"
                     }
                   ],
                   "RunOrder" : "1"
@@ -2050,7 +2076,7 @@
           "Path": "/",
           "Roles": [ { "Ref" : "EC2InstanceRole" } ]
         }
-      },      
+      },
 
       "EC2InstanceRole": {
         "Type": "AWS::IAM::Role",
