@@ -711,6 +711,10 @@
         "NetworkAclId" : { "Ref" : "WebTrafficNetworkAcl" },
         "RuleNumber" : "103",
         "Protocol" : "1",
+        "Icmp" : {
+          "Code" : -1,
+          "Type" : -1
+        },
         "RuleAction" : "allow",
         "Egress" : "false",
         "CidrBlock" : "192.168.0.0/20"
@@ -866,7 +870,7 @@
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "true",
-        "CidrBlock" : { "CidrBlock" : "192.168.0.0/20" },
+        "CidrBlock" : "192.168.0.0/20",
         "PortRange" : { "From" : "0", "To" : "65535" }
       }
     },
@@ -984,7 +988,7 @@
             "IpProtocol" : "tcp",
             "FromPort" : "3306",
             "ToPort" : "3306",
-            "Cidrip" : "192.168.0.0/20"
+            "CidrIp" : "192.168.0.0/20"
           }
         ],
         "Tags" : [
