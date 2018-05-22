@@ -25,7 +25,7 @@
         },
         {
           "Label" : { "default" : "CloudFront Distribution" },
-          "Parameters" : [ "DomainName", "CloudFrontCertificate" ]
+          "Parameters" : [ "CloudFrontEnabled", "DomainName", "CloudFrontCertificate" ]
         },
         {
           "Label" : { "default" : "Database Service Configuration" },
@@ -215,10 +215,17 @@
       "Default": ""
     },
 
-    "CloudFrontCertificate": {
+    "CloudFrontCertificate" : {
       "Type": "String",
       "Description": "Certificate to use with the CloudFront Distribution. Must be in US-EAST-1.",
       "Default": ""
+    },
+
+    "CloudFrontEnabled" : {
+      "Type" : "String",
+      "Description" : "Create CloudFront Distribution.",
+      "Default" : "True",
+      "AllowedValues" : [ "True", "False" ]
     },
 
     "ELBGracePeriod": {
@@ -383,7 +390,8 @@
 
     "UseRDSSnapshot" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "RDSSnapshotName" }, "" ] } ] },
     "CreateCodePipeline" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "CodeDeploymentEnabled" }, "False" ] } ] },
-    "UseAltCNAME" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "DomainName" }, "" ] } ] }
+    "UseAltCNAME" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "DomainName" }, "" ] } ] },
+    "CreateCloudFront" : { "Fn::Equals" : [ {"Ref" : "CloudFrontEnabled" }, "False" ] },
 
   },
 
@@ -747,6 +755,19 @@
       }
     },
 
+    "LANPersonalOutboundNetworkAclEntry" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "WebTrafficNetworkAcl" },
+        "RuleNumber" : "101",
+        "Protocol" : "6",
+        "RuleAction" : "allow",
+        "Egress" : "true",
+        "CidrBlock" : "192.168.0.0/20",
+        "PortRange" : { "From" : "0", "To" : "65535" }
+      }
+    },
+
     "WebServerSubnet1NetworkAclAssociation" : {
       "Type" : "AWS::EC2::SubnetNetworkAclAssociation",
       "Properties" : {
@@ -816,7 +837,7 @@
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
         "Tags" : [
-          { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "RouteTable-RDS" ] ] } },
+          { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "RouteTable-NACL" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
           { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
@@ -920,6 +941,12 @@
             "FromPort" : "-1",
             "ToPort" : "-1",
             "CidrIp" : "192.168.0.0/20"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "2049",
+            "ToPort" : "2049",
+            "CidrIp" : { "Fn::FindInMap" : [ "SubnetConfig", "VPC", "CIDR" ]},
           }
         ],
         "Tags" : [
@@ -1245,7 +1272,7 @@
 
     "WebServerAutoScalingLaunchConfiguration" : {
       "Type" : "AWS::AutoScaling::LaunchConfiguration",
-      "DependsOn" : [ "GatewayToInternet", "EC2WebServerSecurityGroup", "RDSInstance", "EC2InstanceProfile", "SQS" ],
+      "DependsOn" : [ "GatewayToInternet", "EC2WebServerSecurityGroup", "RDSInstance", "EC2InstanceProfile", "SQS", "EFS" ],
       "Metadata" : {
         "AWS::CloudFormation::Init" : {
           "configSets" : {
@@ -1448,18 +1475,6 @@
                 "command" : "chmod +x /tmp/install",
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
-              },
-
-              "code_deploy_agent_c_install_code_deploy_agent" : {
-                "command" : "/tmp/install auto",
-                "cwd" : "/tmp",
-                "ignoreErrors" : "true"
-              },
-
-              "code_deploy_agent_d_stop_code_deploy_agent" : {
-                "command" : "service codedeploy-agent stop",
-                "cwd" : "/tmp",
-                "ignoreErrors" : "true"
               }
 
             }
@@ -1468,6 +1483,7 @@
           "WebServer" : {
             "packages" : {
               "yum" : {
+                "amazon-efs-utils" : [],
                 "httpd" : [],
                 "mod_ssl" : [],
                 "mariadb" : [],
@@ -1520,14 +1536,20 @@
 
             "commands" : {
 
-              "ELB_health_check_a_move_ELB_healthcheck_file" : {
-                "command" : "mv /tmp/health-check.html /var/www/html/",
+              "EFS_a_mount_efs" : {
+                "command" : { "Fn::Join" : [ "", [ "mount -t efs ", { "Ref" : "EFS" }, ":/ /var/www/html" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               },
 
-              "code_deploy_agent_a_start_code_deploy_agent" : {
-                "command" : "service codedeploy-agent start",
+              "EFS_b_update_fstab" : {
+                "command" : { "Fn::Join" : [ "", [ "echo '", { "Ref" : "EFS" } , " /mnt/efs efs defaults,_netdev 0 0' | sudo tee -a /etc/fstab" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+              
+              "ELB_health_check_a_move_ELB_healthcheck_file" : {
+                "command" : "mv /tmp/health-check.html /var/www/html/",
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               }
@@ -1579,6 +1601,10 @@
 
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Cleaning up left over files from yum installations.'\n",
               "yum clean all\n",
+
+              "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Installing CodeDeploy Agent.'\n",
+              "/tmp/install auto\n",
+
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Completed cleaning up after yum.'\n",
 
               "aws sqs send-message --queue-url ", { "Ref" : "SQS" }, " --message-body 'Cleaning up /tmp folder.'\n",
@@ -1716,7 +1742,8 @@
       },
 
       "CloudFrontDistribution": {
-        "Type": "AWS::CloudFront::Distribution",
+        "Type" : "AWS::CloudFront::Distribution",
+        "Condition" : "CreateCloudFront",
         "DependsOn": ["WebServerELB", "S3Bucket"],
         "Properties": {
           "DistributionConfig": {
