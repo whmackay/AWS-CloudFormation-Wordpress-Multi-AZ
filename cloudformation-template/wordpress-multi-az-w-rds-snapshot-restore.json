@@ -391,7 +391,7 @@
     "UseRDSSnapshot" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "RDSSnapshotName" }, "" ] } ] },
     "CreateCodePipeline" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "CodeDeploymentEnabled" }, "False" ] } ] },
     "UseAltCNAME" : { "Fn::Not" : [ { "Fn::Equals" : [ {"Ref" : "DomainName" }, "" ] } ] },
-    "CreateCloudFront" : { "Fn::Equals" : [ {"Ref" : "CloudFrontEnabled" }, "False" ] },
+    "CreateCloudFront" : { "Fn::Equals" : [ {"Ref" : "CloudFrontEnabled" }, "True" ] }
 
   },
 
@@ -755,7 +755,7 @@
       }
     },
 
-    "LANPersonalOutboundNetworkAclEntry" : {
+    "LANPersonalTCPOutboundNetworkAclEntry" : {
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
         "NetworkAclId" : { "Ref" : "WebTrafficNetworkAcl" },
@@ -765,6 +765,22 @@
         "Egress" : "true",
         "CidrBlock" : "192.168.0.0/20",
         "PortRange" : { "From" : "0", "To" : "65535" }
+      }
+    },
+
+    "LANPersonalICMPOutboundNetworkAclEntry" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "WebTrafficNetworkAcl" },
+        "RuleNumber" : "102",
+        "Protocol" : "1",
+        "Icmp" : {
+          "Code" : -1,
+          "Type" : -1
+        },
+        "RuleAction" : "allow",
+        "Egress" : "true",
+        "CidrBlock" : "192.168.0.0/20"
       }
     },
 
@@ -883,7 +899,7 @@
       }
     },
 
-    "LANPersonalOutboundRDSNetworkAclEntry" : {
+    "LANPersonalMySQLOutboundRDSNetworkAclEntry" : {
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
         "NetworkAclId" : { "Ref" : "RDSNetworkAcl" },
@@ -893,6 +909,22 @@
         "Egress" : "true",
         "CidrBlock" : "192.168.0.0/20",
         "PortRange" : { "From" : "0", "To" : "65535" }
+      }
+    },
+
+    "LANPersonalICMPOutboundRDSNetworkAclEntry" : {
+      "Type" : "AWS::EC2::NetworkAclEntry",
+      "Properties" : {
+        "NetworkAclId" : { "Ref" : "RDSNetworkAcl" },
+        "RuleNumber" : "101",
+        "Protocol" : "1",
+        "RuleAction" : "allow",
+        "Egress" : "true",
+        "CidrBlock" : "192.168.0.0/20",
+        "Icmp" : {
+          "Code" : -1,
+          "Type" : -1
+        }
       }
     },
 
@@ -946,7 +978,7 @@
             "IpProtocol" : "tcp",
             "FromPort" : "2049",
             "ToPort" : "2049",
-            "CidrIp" : { "Fn::FindInMap" : [ "SubnetConfig", "VPC", "CIDR" ]},
+            "CidrIp" : { "Fn::FindInMap" : [ "SubnetConfig", "VPC", "CIDR" ]}
           }
         ],
         "Tags" : [
@@ -1547,7 +1579,7 @@
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               },
-              
+
               "ELB_health_check_a_move_ELB_healthcheck_file" : {
                 "command" : "mv /tmp/health-check.html /var/www/html/",
                 "cwd" : "/tmp",
