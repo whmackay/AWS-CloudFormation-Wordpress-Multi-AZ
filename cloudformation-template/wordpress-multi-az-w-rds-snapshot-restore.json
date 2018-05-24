@@ -912,22 +912,6 @@
       }
     },
 
-    "LANPersonalICMPOutboundRDSNetworkAclEntry" : {
-      "Type" : "AWS::EC2::NetworkAclEntry",
-      "Properties" : {
-        "NetworkAclId" : { "Ref" : "RDSNetworkAcl" },
-        "RuleNumber" : "101",
-        "Protocol" : "1",
-        "RuleAction" : "allow",
-        "Egress" : "true",
-        "CidrBlock" : "192.168.0.0/20",
-        "Icmp" : {
-          "Code" : -1,
-          "Type" : -1
-        }
-      }
-    },
-
     "RDSSubnet1NetworkAclAssociation" : {
       "Type" : "AWS::EC2::SubnetNetworkAclAssociation",
       "Properties" : {
