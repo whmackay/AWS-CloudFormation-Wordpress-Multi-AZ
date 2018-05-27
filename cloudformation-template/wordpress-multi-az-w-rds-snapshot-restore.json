@@ -1500,12 +1500,12 @@
             "packages" : {
               "yum" : {
                 "amazon-efs-utils" : [],
-                "httpd" : [],
-                "mod_ssl" : [],
+                "httpd-2.4.6-67.amzn2.6.1" : [],
+                "mod_ssl-2.4.6-67.amzn2.6.1" : [],
                 "mariadb" : [],
-                "php" : [],
-                "php-mysql" : [],
-                "php-mbstring" : [],
+                "php-5.4.16-43.amzn2.0.1" : [],
+                "php-mysqlnd-5.4.16-43.amzn2.0.1" : [],
+                "php-mbstring-5.4.16-43.amzn2.0.1" : [],
                 "perl-Switch" : [],
                 "perl-DateTime" : [],
                 "perl-Sys-Syslog" : [],
@@ -1802,6 +1802,36 @@
               "ViewerProtocolPolicy" : "redirect-to-https"
             },
             "CacheBehaviors" : [
+              {
+                "AllowedMethods" : [ "GET", "HEAD", "OPTIONS" ],
+                "CachedMethods" : [ "GET", "HEAD", "OPTIONS" ],
+                "DefaultTTL" : "86400",
+                "MaxTTL" : "604800",
+                "MinTTL" : "0",
+                "Compress" : "True",
+                "PathPattern" : "/wp-content/*",
+                "SmoothStreaming" : "False",
+                "TargetOriginId" : { "Ref" : "WebServerELB" },
+                "ViewerProtocolPolicy" : "redirect-to-https",
+                "ForwardedValues" : {
+                  "QueryString" : "False"
+                }
+              },
+              {
+                "AllowedMethods" : [ "GET", "HEAD", "OPTIONS" ],
+                "CachedMethods" : [ "GET", "HEAD", "OPTIONS" ],
+                "DefaultTTL" : "86400",
+                "MaxTTL" : "604800",
+                "MinTTL" : "0",
+                "Compress" : "True",
+                "PathPattern" : "/wp-includes/*",
+                "SmoothStreaming" : "False",
+                "TargetOriginId" : { "Ref" : "WebServerELB" },
+                "ViewerProtocolPolicy" : "redirect-to-https",
+                "ForwardedValues" : {
+                  "QueryString" : "False"
+                }
+              },
               {
                 "AllowedMethods" : [ "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT" ],
                 "CachedMethods" : [ "GET", "HEAD", "OPTIONS" ],
