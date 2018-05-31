@@ -616,7 +616,7 @@
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "false",
-        "CidrBlock" : "192.168.0.0/20",
+        "CidrBlock" : "172.16.16.0/20",
         "PortRange" : { "From" : "22", "To" : "22" }
       }
     },
@@ -633,7 +633,7 @@
         },
         "RuleAction" : "allow",
         "Egress" : "false",
-        "CidrBlock" : "192.168.0.0/20"
+        "CidrBlock" : "172.16.16.0/20"
       }
     },
 
@@ -671,7 +671,7 @@
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "true",
-        "CidrBlock" : "192.168.0.0/20",
+        "CidrBlock" : "172.16.16.0/20",
         "PortRange" : { "From" : "0", "To" : "65535" }
       }
     },
@@ -688,7 +688,7 @@
         },
         "RuleAction" : "allow",
         "Egress" : "true",
-        "CidrBlock" : "192.168.0.0/20"
+        "CidrBlock" : "172.16.16.0/20"
       }
     },
 
@@ -761,7 +761,7 @@
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
         "Tags" : [
-          { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "RouteTable-NACL" ] ] } },
+          { "Key" : "Name", "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "RDS-NACL" ] ] } },
           { "Key" : "Project", "Value" : { "Ref" : "ProjectName" } },
           { "Key" : "StackType", "Value" : { "Ref" : "StackType" } }
         ]
@@ -789,7 +789,7 @@
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "false",
-        "CidrBlock" : "192.168.0.0/20",
+        "CidrBlock" : "172.16.16.0/20",
         "PortRange" : { "From" : "3306", "To" : "3306" }
       }
     },
@@ -815,7 +815,7 @@
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "true",
-        "CidrBlock" : "192.168.0.0/20",
+        "CidrBlock" : "172.16.16.0/20",
         "PortRange" : { "From" : "0", "To" : "65535" }
       }
     },
@@ -858,13 +858,13 @@
             "IpProtocol" : "tcp",
             "FromPort" : "22",
             "ToPort" : "22",
-            "CidrIp" : "192.168.0.0/20"
+            "CidrIp" : "172.16.16.0/20"
           },
           {
             "IpProtocol" : "icmp",
             "FromPort" : "-1",
             "ToPort" : "-1",
-            "CidrIp" : "192.168.0.0/20"
+            "CidrIp" : "172.16.16.0/20"
           },
           {
             "IpProtocol" : "tcp",
@@ -939,7 +939,7 @@
             "IpProtocol" : "tcp",
             "FromPort" : "3306",
             "ToPort" : "3306",
-            "CidrIp" : "192.168.0.0/20"
+            "CidrIp" : "172.16.16.0/20"
           }
         ],
         "Tags" : [
