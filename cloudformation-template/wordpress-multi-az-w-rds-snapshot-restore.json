@@ -1467,12 +1467,18 @@
             "commands" : {
 
               "EFS_a_mount_efs" : {
-                "command" : { "Fn::Join" : [ "", [ "mount -t efs ", { "Ref" : "EFS" }, ":/ /var/www/html" ] ] },
+                "command" : { "Fn::Join" : [ "", [ "mkdir -p /var/www/html/wp-content/uploads/" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               },
 
-              "EFS_b_update_fstab" : {
+              "EFS_b_mount_efs" : {
+                "command" : { "Fn::Join" : [ "", [ "mount -t efs ", { "Ref" : "EFS" }, ":/ /var/www/html/wp-content/uploads/" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "EFS_c_update_fstab" : {
                 "command" : { "Fn::Join" : [ "", [ "echo '", { "Ref" : "EFS" } , " /mnt/efs efs defaults,_netdev 0 0' | sudo tee -a /etc/fstab" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
