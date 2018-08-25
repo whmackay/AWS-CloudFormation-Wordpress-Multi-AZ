@@ -1450,7 +1450,7 @@
               },
 
               "OpCache_e_enable_and_configure" : {
-                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.validate_timestamps=0' >> /etc/php.ini" ] ] },
+                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.validate_timestamps=1' >> /etc/php.ini" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               },
@@ -1463,6 +1463,12 @@
 
               "OpCache_g_enable_and_configure" : {
                 "command" : { "Fn::Join" : [ "", [ "cat 'opcache.fast_shutdown=0' >> /etc/php.ini" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "OpCache_h_enable_and_configure" : {
+                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.revalidate_freq=300' >> /etc/php.ini" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               }
