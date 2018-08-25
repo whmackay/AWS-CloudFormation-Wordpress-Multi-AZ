@@ -1411,21 +1411,6 @@
           },
 
           "WebServer" : {
-            "packages" : {
-              "yum" : {
-                "amazon-efs-utils" : [],
-                "httpd-2.4.6-67.amzn2.6.1" : [],
-                "mod_ssl-2.4.6-67.amzn2.6.1" : [],
-                "mariadb" : [],
-                "php-5.4.16-43.amzn2.0.1" : [],
-                "php-mysqlnd-5.4.16-43.amzn2.0.1" : [],
-                "php-mbstring-5.4.16-43.amzn2.0.1" : [],
-                "perl-Switch" : [],
-                "perl-DateTime" : [],
-                "perl-Sys-Syslog" : [],
-                "perl-LWP-Protocol-https" : []
-              }
-            },
 
             "files" : {
 
@@ -1466,6 +1451,12 @@
 
             "commands" : {
 
+              "EFS_a_enable_php72_amazon_linux_extras" : {
+                "command" : { "Fn::Join" : [ "", [ "amazon-linux-extras enable php7.2" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
               "EFS_a_mount_efs" : {
                 "command" : { "Fn::Join" : [ "", [ "mkdir -p /var/www/html/wp-content/uploads/" ] ] },
                 "cwd" : "/tmp",
@@ -1492,6 +1483,22 @@
 
             },
 
+            "packages" : {
+              "yum" : {
+                "amazon-efs-utils" : [],
+                "httpd-2.4.6-67.amzn2.6.1" : [],
+                "mod_ssl-2.4.6-67.amzn2.6.1" : [],
+                "mariadb" : [],
+                "php" : [],
+                "php-mysqlnd" : [],
+                "php-mbstring" : [],
+                "perl-Switch" : [],
+                "perl-DateTime" : [],
+                "perl-Sys-Syslog" : [],
+                "perl-LWP-Protocol-https" : []
+              }
+            },
+
             "services" : {
 
               "sysvinit" : {
@@ -1504,6 +1511,7 @@
 
               }
             }
+
           }
         }
       },
