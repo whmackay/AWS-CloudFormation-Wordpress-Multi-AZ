@@ -1208,6 +1208,7 @@
           "configSets" : {
               "ascending" : [
                 "EC2Standard",
+                "AmazonLinux",
                 "WebServer"
               ]
           },
@@ -1410,6 +1411,16 @@
             }
           },
 
+          "AmazonLinux" : {
+            "commands" : {
+              "EFS_a_enable_php72_amazon_linux_extras" : {
+                "command" : { "Fn::Join" : [ "", [ "amazon-linux-extras enable php7.2" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              }
+            }
+          },
+
           "WebServer" : {
 
             "files" : {
@@ -1450,12 +1461,6 @@
             },
 
             "commands" : {
-
-              "EFS_a_enable_php72_amazon_linux_extras" : {
-                "command" : { "Fn::Join" : [ "", [ "amazon-linux-extras enable php7.2" ] ] },
-                "cwd" : "/tmp",
-                "ignoreErrors" : "true"
-              },
 
               "EFS_a_mount_efs" : {
                 "command" : { "Fn::Join" : [ "", [ "mkdir -p /var/www/html/wp-content/uploads/" ] ] },
