@@ -1418,11 +1418,55 @@
 
           "AmazonLinux" : {
             "commands" : {
+
               "EFS_a_enable_php72_amazon_linux_extras" : {
                 "command" : { "Fn::Join" : [ "", [ "amazon-linux-extras enable php7.2" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
+              },
+
+              "OpCache_a_enable_and_configure" : {
+                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.enable=1' >> /etc/php.ini" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "OpCache_b_enable_and_configure" : {
+                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.memory_consumption=512' >> /etc/php.ini" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "OpCache_c_enable_and_configure" : {
+                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.interned_strings_buffer=64' >> /etc/php.ini" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "OpCache_d_enable_and_configure" : {
+                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.max_accelerated_files=32531' >> /etc/php.ini" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "OpCache_e_enable_and_configure" : {
+                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.validate_timestamps=0' >> /etc/php.ini" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "OpCache_f_enable_and_configure" : {
+                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.save_comments=1' >> /etc/php.ini" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "OpCache_g_enable_and_configure" : {
+                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.fast_shutdown=0' >> /etc/php.ini" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
               }
+
             }
           },
 
