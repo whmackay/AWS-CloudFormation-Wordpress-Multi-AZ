@@ -1423,6 +1423,107 @@
                 "command" : { "Fn::Join" : [ "", [ "amazon-linux-extras enable php7.2" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
+              }
+
+            }
+          },
+
+          "WebServer" : {
+
+            "files" : {
+
+              "/tmp/health-check.html" : {
+                  "content" : { "Fn::Join" : ["", [
+                  "<html>\n",
+                  " <title>ELB Health-Check</title>\n",
+                  " <body>AWS ELB Health-Check Page</body>\n",
+                  "</html>\n"
+                ] ] },
+                "mode"  : "000644",
+                "owner" : "root",
+                "group" : "root"
+              },
+
+              "/home/ec2-user/service-config.cfg" : {
+                "content" : { "Fn::Join" : ["", [
+                  { "Ref" : "DomainName" } , "\n"
+                ] ] },
+                "mode"  : "000600",
+                "owner" : "root",
+                "group" : "root"
+              },
+
+              "/home/ec2-user/database-credentials.cfg" : {
+                  "content" : { "Fn::Join" : ["", [
+                  { "Fn::GetAtt" : [ "RDSInstance", "Endpoint.Address" ] }, "\n",
+                  { "Ref" : "DBName" } , "\n",
+                  { "Ref" : "DBUserName" }, "\n",
+                  { "Ref" : "DBPassword" }, "\n"
+                ] ] },
+                "mode"  : "000600",
+                "owner" : "root",
+                "group" : "root"
+              },
+
+              "/home/ec2-user/php.ini" : {
+                "content" : { "Fn::Join" : ["", [
+                  "opcache.enable=1\n",
+                  "opcache.memory_consumption=512\n",
+                  "opcache.interned_strings_buffer=64\n",
+                  "opcache.max_accelerated_files=32531\n",
+                  "opcache.validate_timestamps=1\n",
+                  "opcache.save_comments=1\n",
+                  "opcache.fast_shutdown=0\n",
+                  "opcache.revalidate_freq=300'\n"
+                ] ] },
+                "mode"  : "000600",
+                "owner" : "root",
+                "group" : "root"
+              },
+
+            },
+
+            "packages" : {
+              "yum" : {
+                "amazon-efs-utils" : [],
+                "httpd-2.4.6-67.amzn2.6.1" : [],
+                "mod_ssl-2.4.6-67.amzn2.6.1" : [],
+                "mariadb" : [],
+                "php" : [],
+                "php-mysqlnd" : [],
+                "php-mbstring" : [],
+                "php-opcache" : [],
+                "perl-Switch" : [],
+                "perl-DateTime" : [],
+                "perl-Sys-Syslog" : [],
+                "perl-LWP-Protocol-https" : []
+              }
+            },
+
+            "commands" : {
+
+              "EFS_a_mount_efs" : {
+                "command" : { "Fn::Join" : [ "", [ "mkdir -p /var/www/html/wp-content/uploads/" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "EFS_b_mount_efs" : {
+                "command" : { "Fn::Join" : [ "", [ "mount -t efs ", { "Ref" : "EFS" }, ":/ /var/www/html/wp-content/uploads/" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "EFS_c_update_fstab" : {
+                "command" : { "Fn::Join" : [ "", [ "echo '", { "Ref" : "EFS" } , " /mnt/efs efs defaults,_netdev 0 0' | sudo tee -a /etc/fstab" ] ] },
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
+              },
+
+              "ELB_health_check_a_move_ELB_healthcheck_file" : {
+                "command" : "mv /tmp/health-check.html /var/www/html/",
+                "cwd" : "/tmp",
+                "ignoreErrors" : "true"
               },
 
               "OpCache_a_enable_and_configure" : {
@@ -1474,90 +1575,6 @@
               }
 
             }
-          },
-
-          "WebServer" : {
-
-            "files" : {
-
-              "/tmp/health-check.html" : {
-                  "content" : { "Fn::Join" : ["", [
-                  "<html>\n",
-                  " <title>ELB Health-Check</title>\n",
-                  " <body>AWS ELB Health-Check Page</body>\n",
-                  "</html>\n"
-                ] ] },
-                "mode"  : "000644",
-                "owner" : "root",
-                "group" : "root"
-              },
-
-              "/home/ec2-user/service-config.cfg" : {
-                "content" : { "Fn::Join" : ["", [
-                  { "Ref" : "DomainName" } , "\n"
-                ] ] },
-                "mode"  : "000600",
-                "owner" : "root",
-                "group" : "root"
-              },
-
-              "/home/ec2-user/database-credentials.cfg" : {
-                  "content" : { "Fn::Join" : ["", [
-                  { "Fn::GetAtt" : [ "RDSInstance", "Endpoint.Address" ] }, "\n",
-                  { "Ref" : "DBName" } , "\n",
-                  { "Ref" : "DBUserName" }, "\n",
-                  { "Ref" : "DBPassword" }, "\n"
-                ] ] },
-                "mode"  : "000600",
-                "owner" : "root",
-                "group" : "root"
-              }
-
-            },
-
-            "commands" : {
-
-              "EFS_a_mount_efs" : {
-                "command" : { "Fn::Join" : [ "", [ "mkdir -p /var/www/html/wp-content/uploads/" ] ] },
-                "cwd" : "/tmp",
-                "ignoreErrors" : "true"
-              },
-
-              "EFS_b_mount_efs" : {
-                "command" : { "Fn::Join" : [ "", [ "mount -t efs ", { "Ref" : "EFS" }, ":/ /var/www/html/wp-content/uploads/" ] ] },
-                "cwd" : "/tmp",
-                "ignoreErrors" : "true"
-              },
-
-              "EFS_c_update_fstab" : {
-                "command" : { "Fn::Join" : [ "", [ "echo '", { "Ref" : "EFS" } , " /mnt/efs efs defaults,_netdev 0 0' | sudo tee -a /etc/fstab" ] ] },
-                "cwd" : "/tmp",
-                "ignoreErrors" : "true"
-              },
-
-              "ELB_health_check_a_move_ELB_healthcheck_file" : {
-                "command" : "mv /tmp/health-check.html /var/www/html/",
-                "cwd" : "/tmp",
-                "ignoreErrors" : "true"
-              }
-
-            },
-
-            "packages" : {
-              "yum" : {
-                "amazon-efs-utils" : [],
-                "httpd-2.4.6-67.amzn2.6.1" : [],
-                "mod_ssl-2.4.6-67.amzn2.6.1" : [],
-                "mariadb" : [],
-                "php" : [],
-                "php-mysqlnd" : [],
-                "php-mbstring" : [],
-                "perl-Switch" : [],
-                "perl-DateTime" : [],
-                "perl-Sys-Syslog" : [],
-                "perl-LWP-Protocol-https" : []
-              }
-            },
 
             "services" : {
 
