@@ -1465,7 +1465,7 @@
                 "group" : "root"
               },
 
-              "/home/ec2-user/php.ini" : {
+              "/home/ec2-user/opcache_php.ini" : {
                 "content" : { "Fn::Join" : ["", [
                   "opcache.enable=1\n",
                   "opcache.memory_consumption=512\n",
@@ -1479,7 +1479,7 @@
                 "mode"  : "000600",
                 "owner" : "root",
                 "group" : "root"
-              },
+              }
 
             },
 
@@ -1527,54 +1527,42 @@
               },
 
               "OpCache_a_enable_and_configure" : {
-                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.enable=1' >> /etc/php.ini" ] ] },
+                "command" : { "Fn::Join" : [ "", [ "cp /etc/php.ini /home/ec2-user/php.ini" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               },
 
               "OpCache_b_enable_and_configure" : {
-                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.memory_consumption=512' >> /etc/php.ini" ] ] },
+                "command" : { "Fn::Join" : [ "", [ "chmod 644 /home/ec2-user/php.ini" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               },
 
               "OpCache_c_enable_and_configure" : {
-                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.interned_strings_buffer=64' >> /etc/php.ini" ] ] },
+                "command" : { "Fn::Join" : [ "", [ "cat /home/ec2-user/opcache_php.ini >> /home/ec2-user/php.ini" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               },
 
               "OpCache_d_enable_and_configure" : {
-                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.max_accelerated_files=32531' >> /etc/php.ini" ] ] },
+                "command" : { "Fn::Join" : [ "", [ "chmod 644 /home/ec2-user/php.ini" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               },
 
               "OpCache_e_enable_and_configure" : {
-                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.validate_timestamps=1' >> /etc/php.ini" ] ] },
+                "command" : { "Fn::Join" : [ "", [ "cp /home/ec2-user/php.ini /etc/php.ini" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               },
 
               "OpCache_f_enable_and_configure" : {
-                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.save_comments=1' >> /etc/php.ini" ] ] },
-                "cwd" : "/tmp",
-                "ignoreErrors" : "true"
-              },
-
-              "OpCache_g_enable_and_configure" : {
-                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.fast_shutdown=0' >> /etc/php.ini" ] ] },
-                "cwd" : "/tmp",
-                "ignoreErrors" : "true"
-              },
-
-              "OpCache_h_enable_and_configure" : {
-                "command" : { "Fn::Join" : [ "", [ "cat 'opcache.revalidate_freq=300' >> /etc/php.ini" ] ] },
+                "command" : { "Fn::Join" : [ "", [ "service httpd restart" ] ] },
                 "cwd" : "/tmp",
                 "ignoreErrors" : "true"
               }
 
-            }
+            },
 
             "services" : {
 
