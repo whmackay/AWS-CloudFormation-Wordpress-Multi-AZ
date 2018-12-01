@@ -12,6 +12,10 @@
           "Parameters": [ "ProjectName", "CodeCommitRepositoryName", "CodeCommitBranch", "StackType", "CodeDeploymentEnabled" ]
         },
         {
+          "Label": { "default": "Network Configuration" },
+          "Parameters": [ "VPCCidrForPeering" ]
+        },
+        {
           "Label" : { "default" : "Amazon EC2 Configuration" },
           "Parameters" : [ "WebServerInstanceType", "KeyName" ]
         },
@@ -237,6 +241,12 @@
       "Type": "String",
       "Description": "Amount of grace time between scaling actions by AutoScaling.",
       "Default": "600"
+    },
+
+    "VPCCidrForPeering": {
+      "Type": "String",
+      "Description": "Amount of grace time between scaling actions by AutoScaling.",
+      "Default": "172.16.0.0/16"
     }
   },
 
@@ -613,7 +623,7 @@
       }
     },
 
-    "LANPersonalInboundSSHNetworkAclEntry" : {
+    "VPCPeeringInboundSSHNetworkAclEntry" : {
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
         "NetworkAclId" : { "Ref" : "WebTrafficNetworkAcl" },
@@ -621,12 +631,12 @@
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "false",
-        "CidrBlock" : "172.16.16.0/20",
+        "CidrBlock" : { "Ref" : "VPCCidrForPeering"},
         "PortRange" : { "From" : "22", "To" : "22" }
       }
     },
 
-    "LANPersonalInboundICMPNetworkAclEntry" : {
+    "VPCPeeringInboundICMPNetworkAclEntry" : {
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
         "NetworkAclId" : { "Ref" : "WebTrafficNetworkAcl" },
@@ -638,7 +648,7 @@
         },
         "RuleAction" : "allow",
         "Egress" : "false",
-        "CidrBlock" : "172.16.16.0/20"
+        "CidrBlock" : { "Ref" : "VPCCidrForPeering"},
       }
     },
 
@@ -668,7 +678,7 @@
       }
     },
 
-    "LANPersonalTCPOutboundNetworkAclEntry" : {
+    "VPCPeeringTCPOutboundNetworkAclEntry" : {
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
         "NetworkAclId" : { "Ref" : "WebTrafficNetworkAcl" },
@@ -676,12 +686,12 @@
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "true",
-        "CidrBlock" : "172.16.16.0/20",
+        "CidrBlock" : { "Ref" : "VPCCidrForPeering"},
         "PortRange" : { "From" : "0", "To" : "65535" }
       }
     },
 
-    "LANPersonalICMPOutboundNetworkAclEntry" : {
+    "VPCPeeringICMPOutboundNetworkAclEntry" : {
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
         "NetworkAclId" : { "Ref" : "WebTrafficNetworkAcl" },
@@ -693,7 +703,7 @@
         },
         "RuleAction" : "allow",
         "Egress" : "true",
-        "CidrBlock" : "172.16.16.0/20"
+        "CidrBlock" : { "Ref" : "VPCCidrForPeering"}
       }
     },
 
@@ -786,7 +796,7 @@
       }
     },
 
-    "LANPersonalInboundRDSNetworkAclEntry" : {
+    "VPCPeeringInboundRDSNetworkAclEntry" : {
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
         "NetworkAclId" : { "Ref" : "RDSNetworkAcl" },
@@ -794,7 +804,7 @@
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "false",
-        "CidrBlock" : "172.16.16.0/20",
+        "CidrBlock" : { "Ref" : "VPCCidrForPeering"},
         "PortRange" : { "From" : "3306", "To" : "3306" }
       }
     },
@@ -812,7 +822,7 @@
       }
     },
 
-    "LANPersonalMySQLOutboundRDSNetworkAclEntry" : {
+    "VPCPeeringMySQLOutboundRDSNetworkAclEntry" : {
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
         "NetworkAclId" : { "Ref" : "RDSNetworkAcl" },
@@ -820,7 +830,7 @@
         "Protocol" : "6",
         "RuleAction" : "allow",
         "Egress" : "true",
-        "CidrBlock" : "172.16.16.0/20",
+        "CidrBlock" : { "Ref" : "VPCCidrForPeering"},
         "PortRange" : { "From" : "0", "To" : "65535" }
       }
     },
@@ -863,13 +873,13 @@
             "IpProtocol" : "tcp",
             "FromPort" : "22",
             "ToPort" : "22",
-            "CidrIp" : "172.16.16.0/20"
+            "CidrIp" : { "Ref" : "VPCCidrForPeering"}
           },
           {
             "IpProtocol" : "icmp",
             "FromPort" : "-1",
             "ToPort" : "-1",
-            "CidrIp" : "172.16.16.0/20"
+            "CidrIp" : { "Ref" : "VPCCidrForPeering"}
           },
           {
             "IpProtocol" : "tcp",
@@ -944,7 +954,7 @@
             "IpProtocol" : "tcp",
             "FromPort" : "3306",
             "ToPort" : "3306",
-            "CidrIp" : "172.16.16.0/20"
+            "CidrIp" : { "Ref" : "VPCCidrForPeering"}
           }
         ],
         "Tags" : [
