@@ -648,7 +648,7 @@
         },
         "RuleAction" : "allow",
         "Egress" : "false",
-        "CidrBlock" : { "Ref" : "VPCCidrForPeering"},
+        "CidrBlock" : { "Ref" : "VPCCidrForPeering"}
       }
     },
 
